@@ -1,5 +1,5 @@
 /**
- * 成都理工大学沿革系统 - WebGL 3D 旗舰版 (最终调优版)
+ * 成都理工大学沿革系统 - WebGL 3D 旗舰版 (矿物图谱风格)
  * 目标：实现完美的球体分层、修复搜索定位逻辑
  */
 const Graph = (() => {
@@ -7,76 +7,110 @@ const Graph = (() => {
     let currentYear = 2025;
     const loader = new THREE.TextureLoader();
 
+    // ==========================================
+    // 【配色方案 - 参考矿物图谱风格】
+    // 蓝色系渐变：深蓝(学校) -> 中蓝(院系) -> 浅蓝(专业)
+    // ==========================================
+    const COLORS = {
+        school: '#1E3A8A',      // 学校：深蓝色
+        department: '#3B82F6',   // 院系：中蓝色
+        major: '#93C5FD',        // 专业：浅蓝色
+        link: 'rgba(180, 190, 210, 0.55)',  // 连线：浅灰色（更明显）
+        particle: '#60A5FA',     // 粒子：亮蓝色
+        background: '#050810',   // 背景：深近乎纯黑的暗蓝色
+        glow: '#3B82F6'          // 发光色：蓝色
+    };
+
+    // ==========================================
+    // 【字号方案 - 三级层级】匹配矿物图谱风格
+    // ==========================================
+    const FONT_SIZES = {
+        school: 16,       // 学校：最大
+        department: 9,    // 院系：中等
+        major: 5          // 专业：最小
+    };
+
     function init() {
         const container = document.getElementById('3d-graph');
         if (!container) return;
 
         // 1. 初始化 3D 引擎
         graphInstance = ForceGraph3D()(container)
-            .backgroundColor('#010208')
+            .backgroundColor(COLORS.background)
             .showNavInfo(false)
             .nodeRelSize(4)
-            // === 强化连线视觉效果 ===
-            .linkColor(() => '#00ffff')           // 1. 使用高饱和度的亮青色
-            .linkOpacity(0.8)                     // 2. 提高不透明度 (从0.3调到0.7)
-            .linkWidth(1.5)                       // 3. 增加线条宽度 (从0.5调到1.5)
+            
+            // === 浅灰色连线（矿物图谱风格）===
+            .linkColor(() => COLORS.link)
+            .linkOpacity(0.9)
+            .linkWidth(1.0)
 
-            // === 强化能量流粒子 (让连线“动起来”更显眼) ===
-            .linkDirectionalParticles(4)          // 4. 增加粒子数量
-            .linkDirectionalParticleSpeed(0.008)
-            .linkDirectionalParticleWidth(3.0)    // 5. 增大粒子尺寸，使其产生霓虹闪烁感
+            // === 能量流粒子（让连线"动起来"）===
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleSpeed(0.003)
+            .linkDirectionalParticleWidth(1.2)
+            .linkDirectionalParticleColor(() => COLORS.particle)
 
             .nodeThreeObject(node => {
                 const group = new THREE.Group();
                 const isSchool = node.type === 'school';
                 const isDept = node.type === 'department';
-                const nodeColor = isSchool ? '#4a6cf7' : (isDept ? '#2ecc71' : '#e67e22');
-                const size = isSchool ? 16 : (isDept ? 9 : 4.5);
+                
+                // 蓝色系配色：深蓝(学校) -> 中蓝(院系) -> 浅蓝(专业)
+                const nodeColor = isSchool ? COLORS.school : (isDept ? COLORS.department : COLORS.major);
+                
+                // 节点大小：学校最大，院系中等(学校的1/2)，专业最小(学校的1/4)
+                const size = isSchool ? 35 : (isDept ? 18 : 9);
 
-                // A. 创建宝石球体 (MeshPhongMaterial 提供高光立体感)
+                // A. 创建发光球体（矿物图谱风格：圆形节点 + 外发光）
                 const geometry = new THREE.SphereGeometry(size, 32, 32);
+                
+                // 创建渐变材质
                 let material = new THREE.MeshPhongMaterial({
                     color: nodeColor,
                     emissive: nodeColor,
-                    emissiveIntensity: 0.5,
-                    shininess: 100,
-                    specular: '#ffffff'
+                    emissiveIntensity: isSchool ? 0.6 : (isDept ? 0.4 : 0.25),
+                    shininess: 80,
+                    specular: '#ffffff',
+                    transparent: true,
+                    opacity: 0.9
                 });
-
-                // 处理重要节点贴图
-                const isVip = isSchool || ["环境", "体育", "计算机", "软件"].some(k => node.name.includes(k));
-                if (isVip) {
-                    let imgPath = '/static/images/school-badge.jpg';
-                    if(node.name.includes("体育")) imgPath = '/static/images/PE-badge.jpg';
-                    if(node.name.includes("环境")) imgPath = '/static/images/college-badge.jpg';
-                    if(node.name.includes("计算机") || node.name.includes("软件")) imgPath = '/static/images/computer-badge.jpg';
-
-                    loader.load(imgPath, (texture) => {
-                        sphere.material = new THREE.MeshBasicMaterial({ map: texture });
-                    });
-                }
 
                 const sphere = new THREE.Mesh(geometry, material);
                 group.add(sphere);
 
-                // B. 创建文字标签 (始终面向观众)
+                // B. 添加外发光光环（矿物图谱风格：淡蓝色光晕）
+                const glowSize = isSchool ? 1.4 : (isDept ? 1.35 : 1.3);
+                const glowOpacity = isSchool ? 0.18 : (isDept ? 0.12 : 0.08);
+                const glowGeometry = new THREE.SphereGeometry(size * glowSize, 32, 32);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: COLORS.glow,
+                    transparent: true,
+                    opacity: glowOpacity,
+                    side: THREE.BackSide
+                });
+                const glowSphere = new THREE.Mesh(glowGeometry, glowMaterial);
+                group.add(glowSphere);
+
+                // C. 创建文字标签（三级字号）- 放在节点上方避免被遮挡
                 const sprite = new SpriteText(node.name);
                 sprite.color = '#ffffff';
-                sprite.textHeight = isSchool ? 8 : 4.5;
-                sprite.position.set(0, -(size + 12), 0);
-                sprite.backgroundColor = 'rgba(0,0,0,0.4)';
-                sprite.padding = 1.5;
-                sprite.borderRadius = 4;
+                
+                // 字号：学校最大，院系中等，专业最小
+                sprite.textHeight = isSchool ? FONT_SIZES.school : (isDept ? FONT_SIZES.department : FONT_SIZES.major);
+                // 标签放在节点上方（正Y方向），旋转时不易被遮挡
+                sprite.position.set(0, size + 12, 0);
+                // 透明背景，更简洁美观
+                sprite.backgroundColor = 'transparent';
+                sprite.padding = 0;
+                sprite.borderRadius = 0;
+                // 设置渲染顺序，确保标签在球体之上
+                sprite.renderOrder = 999;
+                sprite.material.depthTest = false;
                 group.add(sprite);
 
                 return group;
             })
-            // === 模拟矿物图谱的极细发光连线 ===
-            .linkColor(() => 'rgba(0, 255, 255, 0.4)')
-            .linkWidth(0.6)
-            .linkDirectionalParticles(3)
-            .linkDirectionalParticleSpeed(0.007)
-            .linkDirectionalParticleWidth(2.5)
             .onNodeClick(node => focusOnNode(node));
 
         // 2. 场景灯光
@@ -102,7 +136,6 @@ const Graph = (() => {
         loadYear(2025);
     }
 
-    // 核心函数：对焦节点
     // 核心函数：对焦节点并展示深度详情
     function focusOnNode(node) {
         if (!node) return;
@@ -173,7 +206,7 @@ const Graph = (() => {
             });
 
         // 镜头飞行逻辑保持不变
-        const distance = 350;
+        const distance = 500;
         const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
         graphInstance.cameraPosition({ x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, node, 1500);
     }
@@ -181,6 +214,10 @@ const Graph = (() => {
 function loadYear(year) {
         currentYear = year;
         if (!graphInstance) return;
+
+        // 记录加载开始时间
+        const loadStartTime = Date.now();
+        const minLoadTime = 2000; // 最少显示2秒加载动画
 
         fetch(`/api/graph?year=${year}`).then(r => r.json()).then(data => {
             // 在格式化节点数据时，给每个节点一个随机的初始 Z 坐标
@@ -202,31 +239,40 @@ function loadYear(year) {
             // 【核心修改：实现球体化布局】
             // ==========================================
 
-            // 1. 强力电荷力（排斥力）：在 3D 空间中全方位推开节点
-            // 数值越负，球体越“膨胀”
-            graphInstance.d3Force('charge').strength(-800);
+            // 1. 电荷力（排斥力）：增加排斥力让专业节点炸开
+            graphInstance.d3Force('charge').strength(-900);
 
-            // 2. 弱化径向力：不要让它像“钢圈”一样死死勒住节点
-            // 把 strength 从 1.5 调低到 0.5 左右，允许节点在前后方向偏离轨道
+            // 2. 径向力：专业节点径向距离加大，有更多空间分散
             graphInstance.d3Force('radial', d3.forceRadial(node => {
                 if (node.type === 'school') return 0;
-                if (node.type === 'department') return 300;
-                return 700;
-            }, 0, 0, 0).strength(0.5)); // 降低强度，让节点可以向前后扩散
+                if (node.type === 'department') return 260;
+                return 850;  // 专业节点放在更外圈，有更多空间
+            }, 0, 0, 0).strength(0.5));
 
             // 3. 连线力：保持逻辑结构
             graphInstance.d3Force('link').distance(node => {
-                return node.source.type === 'school' ? 400 : 150;
+                return node.source.type === 'school' ? 350 : 180;
             }).strength(0.5);
 
-            // 4. 【新增】增加中心引力，防止节点散得太乱找不到
+            // 4. 中心引力，防止节点散得太乱
             graphInstance.d3Force('center', d3.forceCenter(0, 0));
 
             // 初始视角
-            graphInstance.cameraPosition({ z: 1000 });
+            graphInstance.cameraPosition({ z: 1200 });
 
             const badge = document.getElementById('current-year-badge');
             if(badge) badge.textContent = year;
+            
+            // 隐藏加载动画（确保至少显示2秒）
+            const elapsed = Date.now() - loadStartTime;
+            const remainingTime = Math.max(0, minLoadTime - elapsed);
+            
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }, remainingTime);
         });
     }
 
@@ -251,7 +297,7 @@ function loadYear(year) {
 
                 if (target) {
                     // 2. 执行摄像头对焦
-                    const distance = 250;
+                    const distance = 400;
                     const distRatio = 1 + distance / Math.hypot(target.x, target.y, target.z);
                     graphInstance.cameraPosition(
                         { x: target.x * distRatio, y: target.y * distRatio, z: target.z * distRatio },
@@ -299,7 +345,7 @@ function loadYear(year) {
                                 if(detail.note) html += `<h4>备注说明</h4><p class="detail-note">${detail.note}</p>`;
                                 html += `</div>`;
 
-                                // 写入内容，解决“空的”问题
+                                // 写入内容，解决"空的"问题
                                 content.innerHTML = html;
                             }
                         });

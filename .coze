@@ -1,0 +1,10 @@
+[project]
+requires = ["python-3.11"]
+
+[dev]
+build = ["pip", "install", "flask", "pandas", "openpyxl"]
+run = ["python", "school-evolution2/app.py"]
+
+[deploy]
+build = ["pip", "install", "flask", "pandas", "openpyxl"]
+run = ["python", "school-evolution2/app.py"]

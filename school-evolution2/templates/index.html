@@ -16,10 +16,42 @@
 </head>
 <body>
 
-<!-- 顶部晶体风格标题 -->
+<!-- 加载动画 -->
+<div id="loading-overlay">
+    <div class="loading-content">
+        <div class="loading-crystals">
+            <div class="crystal crystal-1"></div>
+            <div class="crystal crystal-2"></div>
+            <div class="crystal crystal-3"></div>
+            <div class="crystal crystal-4"></div>
+            <div class="crystal crystal-5"></div>
+            <div class="crystal crystal-6"></div>
+        </div>
+        <div class="loading-text">
+            Loading<span class="dot dot1">.</span><span class="dot dot2">.</span><span class="dot dot3">.</span>
+        </div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 顶部标题标签 - 矿物图谱风格 -->
 <div id="top-title-container">
     <div class="title-main-badge">
-        <div class="title-text">成理沿革图谱</div>
+        <div class="badge-left-decoration"></div>
+        <img src="/static/images/cdut-badge.png" alt="成都理工大学校徽" class="title-badge-logo" />
+        <div class="title-text-group">
+            <div class="title-text">成理沿革图谱</div>
+            <div class="title-subtitle">Chengdu University of Technology</div>
+        </div>
+        <div class="badge-right-decoration">
+            <svg viewBox="0 0 40 40" class="crystal-icon">
+                <polygon points="20,2 38,15 32,38 8,38 2,15" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                <polygon points="20,8 30,16 26,32 14,32 10,16" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
+                <polygon points="20,14 24,18 22,26 18,26 16,18" fill="rgba(255,255,255,0.2)"/>
+            </svg>
+        </div>
     </div>
 </div>
 

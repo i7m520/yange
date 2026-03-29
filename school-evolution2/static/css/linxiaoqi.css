@@ -1,0 +1,447 @@
+/* 林小柒奔跑形象 - 还原官方设计 */
+
+/* 角色奔跑区域 */
+.loading-character {
+    position: relative;
+    width: 320px;
+    height: 170px;
+    overflow: hidden;
+}
+
+.character-runner {
+    position: absolute;
+    left: -100px;
+    top: 10px;
+    width: 80px;
+    height: 130px;
+    animation: runner-move 2.5s linear infinite;
+}
+
+@keyframes runner-move {
+    0% { left: -100px; }
+    100% { left: 340px; }
+}
+
+/* ===== 恐龙头套 ===== */
+.runner-head {
+    position: absolute;
+    top: 0;
+    left: 5px;
+    width: 60px;
+    height: 55px;
+    background: #5DADE2;
+    border-radius: 50% 50% 40% 40%;
+    z-index: 10;
+    animation: head-bounce 0.3s ease-in-out infinite;
+}
+
+@keyframes head-bounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(2deg); }
+}
+
+/* 头套上的恐龙眼睛装饰 */
+.runner-head .dino-eye {
+    position: absolute;
+    top: 18px;
+    width: 14px;
+    height: 14px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    z-index: 11;
+}
+
+.runner-head .dino-eye::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+}
+
+.runner-head .dino-eye.left { left: 5px; }
+.runner-head .dino-eye.right { right: 5px; }
+
+/* 恐龙角 - 头顶粉色角 */
+.runner-head .horn {
+    position: absolute;
+    top: -10px;
+    width: 12px;
+    height: 16px;
+    background: #F8BBD9;
+    border-radius: 50% 50% 30% 30%;
+    z-index: 12;
+}
+
+.runner-head .horn::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 8px;
+    height: 10px;
+    background: #FCE4EC;
+    border-radius: 50%;
+}
+
+.runner-head .horn.left { left: 12px; transform: rotate(-15deg); }
+.runner-head .horn.right { right: 12px; transform: rotate(15deg); }
+
+/* 头套下颚/嘴巴部分 */
+.runner-head .snout {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 15px;
+    background: #5DADE2;
+    border-radius: 0 0 50% 50%;
+}
+
+/* 白色牙齿 */
+.runner-head .teeth {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+    z-index: 13;
+}
+
+.runner-head .teeth span {
+    width: 6px;
+    height: 7px;
+    background: white;
+    border-radius: 0 0 3px 3px;
+}
+
+/* ===== 真实的脸（在头套内） ===== */
+.runner-face {
+    position: absolute;
+    top: 22px;
+    left: 15px;
+    width: 40px;
+    height: 28px;
+    z-index: 14;
+}
+
+/* 可爱的大眼睛 */
+.runner-face .eye {
+    position: absolute;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    background: #1a1a1a;
+    border-radius: 50%;
+}
+
+.runner-face .eye::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+}
+
+.runner-face .eye::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 6px;
+    width: 3px;
+    height: 3px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+}
+
+.runner-face .eye.left { left: 0; }
+.runner-face .eye.right { right: 0; }
+
+/* 腮红 */
+.runner-face .blush {
+    position: absolute;
+    top: 14px;
+    width: 10px;
+    height: 6px;
+    background: #FFCDD2;
+    border-radius: 50%;
+}
+
+.runner-face .blush.left { left: -4px; }
+.runner-face .blush.right { right: -4px; }
+
+/* 微笑嘴巴 */
+.runner-face .mouth {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 5px;
+    border: 2px solid #1a1a1a;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: transparent;
+}
+
+/* ===== 红领巾 ===== */
+.runner-scarf {
+    position: absolute;
+    top: 52px;
+    left: 15px;
+    width: 40px;
+    height: 12px;
+    background: #E53935;
+    border-radius: 3px;
+    z-index: 15;
+}
+
+/* 红领巾下垂部分 */
+.runner-scarf::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 8px;
+    width: 12px;
+    height: 20px;
+    background: #E53935;
+    border-radius: 2px 2px 4px 4px;
+    transform: rotate(10deg);
+}
+
+/* ===== 身体 ===== */
+.runner-body {
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    width: 55px;
+    height: 35px;
+    background: #5DADE2;
+    border-radius: 12px 12px 8px 8px;
+    z-index: 5;
+}
+
+/* 身体上的粉色斑点 */
+.runner-body .spot {
+    position: absolute;
+    background: #F8BBD9;
+    border-radius: 50%;
+}
+
+.runner-body .spot:nth-child(1) { top: 5px; left: 5px; width: 6px; height: 5px; }
+.runner-body .spot:nth-child(2) { top: 15px; right: 8px; width: 5px; height: 4px; }
+
+/* 胸口米色区域 */
+.runner-body .chest {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 35px;
+    height: 22px;
+    background: #FFF9E6;
+    border-radius: 6px;
+}
+
+/* 70标志 */
+.runner-body .chest::before {
+    content: '70';
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: bold;
+    color: #E53935;
+}
+
+/* ===== 尾巴 ===== */
+.runner-tail {
+    position: absolute;
+    top: 65px;
+    right: -25px;
+    width: 35px;
+    height: 18px;
+    background: #5DADE2;
+    border-radius: 10px 20px 20px 10px;
+    transform-origin: left center;
+    animation: tail-wag 0.3s ease-in-out infinite alternate;
+    z-index: 4;
+}
+
+/* 尾巴粉色斑点 */
+.runner-tail::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 10px;
+    width: 8px;
+    height: 6px;
+    background: #F8BBD9;
+    border-radius: 50%;
+}
+
+/* 尾巴末端锯齿 */
+.runner-tail::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-left: 10px solid #5DADE2;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+}
+
+@keyframes tail-wag {
+    0% { transform: rotate(-20deg); }
+    100% { transform: rotate(15deg); }
+}
+
+/* ===== 手臂 ===== */
+.runner-arm {
+    position: absolute;
+    top: 65px;
+    width: 12px;
+    height: 20px;
+    background: #5DADE2;
+    border-radius: 6px;
+    transform-origin: top center;
+    z-index: 6;
+}
+
+.runner-arm::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background: #5DADE2;
+    border-radius: 50%;
+}
+
+.runner-arm.front {
+    left: 2px;
+    animation: arm-front 0.3s ease-in-out infinite;
+}
+
+.runner-arm.back {
+    right: 2px;
+    animation: arm-back 0.3s ease-in-out infinite;
+}
+
+@keyframes arm-front {
+    0%, 100% { transform: rotate(35deg); }
+    50% { transform: rotate(-25deg); }
+}
+
+@keyframes arm-back {
+    0%, 100% { transform: rotate(-25deg); }
+    50% { transform: rotate(35deg); }
+}
+
+/* ===== 腿部 ===== */
+.runner-leg {
+    position: absolute;
+    top: 92px;
+    width: 15px;
+    height: 28px;
+    background: #5DADE2;
+    border-radius: 5px 5px 4px 4px;
+    transform-origin: top center;
+    z-index: 3;
+}
+
+.runner-leg.left {
+    left: 15px;
+    animation: leg-front 0.3s ease-in-out infinite;
+}
+
+.runner-leg.right {
+    left: 40px;
+    animation: leg-back 0.3s ease-in-out infinite;
+}
+
+/* 恐龙脚 */
+.runner-leg::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: -4px;
+    width: 22px;
+    height: 12px;
+    background: #5DADE2;
+    border-radius: 4px 10px 6px 6px;
+}
+
+/* 脚趾 - 白色 */
+.runner-leg::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 7px 0 0 white, 14px 0 0 white;
+}
+
+@keyframes leg-front {
+    0%, 100% { transform: rotate(-30deg); }
+    50% { transform: rotate(30deg); }
+}
+
+@keyframes leg-back {
+    0%, 100% { transform: rotate(30deg); }
+    50% { transform: rotate(-30deg); }
+}
+
+/* ===== 书包 ===== */
+.runner-backpack {
+    position: absolute;
+    top: 62px;
+    right: -5px;
+    width: 22px;
+    height: 28px;
+    background: #1E3A5F;
+    border-radius: 4px 4px 3px 3px;
+    z-index: 2;
+}
+
+/* 书包扣 */
+.runner-backpack::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
+/* 书包红色装饰 */
+.runner-backpack::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 3px;
+    background: #E53935;
+    border-radius: 1px;
+}

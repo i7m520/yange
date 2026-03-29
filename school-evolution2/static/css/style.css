@@ -9,6 +9,200 @@ body {
     flex-direction: column;
 }
 
+/* ========================================
+   加载动画 - 林小柒奔跑动画
+   ======================================== */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #050810 0%, #0a1020 50%, #050810 100%);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+#loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+}
+
+/* 晶体碎片加载动画 */
+.loading-crystals {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.crystal {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    animation: crystal-float 2s ease-in-out infinite;
+}
+
+.crystal::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* 晶体1 - 大菱形 */
+.crystal-1 {
+    top: 20px;
+    left: 30px;
+    animation-delay: 0s;
+}
+.crystal-1::before {
+    border-width: 25px 15px 25px 15px;
+    border-color: rgba(100, 200, 255, 0.8) transparent rgba(50, 150, 220, 0.6) transparent;
+    filter: drop-shadow(0 0 8px rgba(100, 200, 255, 0.6));
+}
+
+/* 晶体2 - 小菱形 */
+.crystal-2 {
+    top: 10px;
+    left: 70px;
+    animation-delay: 0.3s;
+}
+.crystal-2::before {
+    border-width: 18px 10px 18px 10px;
+    border-color: rgba(150, 220, 255, 0.9) transparent rgba(80, 180, 240, 0.7) transparent;
+    filter: drop-shadow(0 0 6px rgba(150, 220, 255, 0.5));
+}
+
+/* 晶体3 - 中菱形 */
+.crystal-3 {
+    top: 60px;
+    left: 10px;
+    animation-delay: 0.6s;
+}
+.crystal-3::before {
+    border-width: 20px 12px 20px 12px;
+    border-color: rgba(120, 210, 255, 0.85) transparent rgba(60, 160, 230, 0.65) transparent;
+    filter: drop-shadow(0 0 7px rgba(120, 210, 255, 0.55));
+}
+
+/* 晶体4 - 小菱形 */
+.crystal-4 {
+    top: 70px;
+    left: 60px;
+    animation-delay: 0.9s;
+}
+.crystal-4::before {
+    border-width: 15px 9px 15px 9px;
+    border-color: rgba(180, 230, 255, 0.9) transparent rgba(100, 190, 250, 0.7) transparent;
+    filter: drop-shadow(0 0 5px rgba(180, 230, 255, 0.5));
+}
+
+/* 晶体5 - 微小菱形 */
+.crystal-5 {
+    top: 40px;
+    left: 85px;
+    animation-delay: 1.2s;
+}
+.crystal-5::before {
+    border-width: 12px 7px 12px 7px;
+    border-color: rgba(200, 240, 255, 0.95) transparent rgba(120, 200, 255, 0.75) transparent;
+    filter: drop-shadow(0 0 4px rgba(200, 240, 255, 0.5));
+}
+
+/* 晶体6 - 小菱形 */
+.crystal-6 {
+    top: 85px;
+    left: 35px;
+    animation-delay: 1.5s;
+}
+.crystal-6::before {
+    border-width: 14px 8px 14px 8px;
+    border-color: rgba(140, 215, 255, 0.88) transparent rgba(70, 170, 245, 0.68) transparent;
+    filter: drop-shadow(0 0 5px rgba(140, 215, 255, 0.45));
+}
+
+@keyframes crystal-float {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) rotate(0deg) scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-10px) rotate(180deg) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) rotate(360deg) scale(0.5);
+    }
+}
+
+/* 加载文字 */
+.loading-text {
+    font-size: 22px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* 跳动的句号 */
+.loading-text .dot {
+    display: inline-block;
+    animation: dot-bounce 1.4s ease-in-out infinite;
+}
+
+.loading-text .dot1 { animation-delay: 0s; }
+.loading-text .dot2 { animation-delay: 0.2s; }
+.loading-text .dot3 { animation-delay: 0.4s; }
+
+@keyframes dot-bounce {
+    0%, 60%, 100% { 
+        transform: translateY(0);
+        color: rgba(255, 255, 255, 0.6);
+    }
+    30% { 
+        transform: translateY(-8px);
+        color: #60A5FA;
+        text-shadow: 0 0 10px rgba(96, 165, 250, 0.8);
+    }
+}
+
+/* 进度条 */
+.loading-progress {
+    width: 200px;
+    height: 4px;
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA);
+    border-radius: 2px;
+    animation: progress-animate 2s ease-in-out infinite;
+}
+
+@keyframes progress-animate {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
 /* Header */
 #header {
     display: flex;
@@ -468,9 +662,9 @@ body {
     width: 12px; height: 12px; border-radius: 50%;
     display: inline-block;
 }
-.legend-dot.school { background: #4a6cf7; }
-.legend-dot.department { background: #2ecc71; }
-.legend-dot.major { background: #e67e22; }
+.legend-dot.school { background: #1E3A8A; }
+.legend-dot.department { background: #3B82F6; }
+.legend-dot.major { background: #93C5FD; }
 
 /* Tooltip */
 #tooltip {
@@ -572,112 +766,226 @@ body {
 .evolution-year { color: #4a6cf7; font-weight: 600; margin-right: 6px; }
 .evolution-name { color: #c0c8ff; }
 
-/* Timeline */
+/* Timeline - 美化版 */
 #timeline-container {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    background: linear-gradient(0deg, #0d1137, #131842);
-    border-top: 1px solid #2a3070;
-    gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-top: 1px solid rgba(99, 102, 241, 0.2);
+    gap: 16px;
     flex-shrink: 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
+
 #play-btn {
-    background: #4a6cf7;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     border: none;
     color: #fff;
-    width: 36px; height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
-#play-btn:hover { background: #3a5cd7; }
-#play-btn.playing { background: #e74c3c; }
-#timeline { flex: 1; position: relative; padding: 0 8px; }
+
+#play-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    border-radius: 50%;
+}
+
+#play-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+#play-btn.playing {
+    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+#timeline {
+    flex: 1;
+    position: relative;
+    padding: 0 12px;
+}
+
 #timeline-track {
-    height: 6px;
-    background: #252a5a;
-    border-radius: 3px;
+    height: 8px;
+    background: rgba(51, 65, 85, 0.5);
+    border-radius: 10px;
     position: relative;
     cursor: pointer;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    overflow: visible;
 }
+
+#timeline-track::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        rgba(139, 92, 246, 0.1) 50%, 
+        rgba(99, 102, 241, 0.1) 100%);
+    border-radius: 10px;
+}
+
 #timeline-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4a6cf7, #7b9cf9);
-    border-radius: 3px;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    border-radius: 10px;
     width: 100%;
-    transition: width 0.15s;
+    transition: width 0.2s ease;
+    position: relative;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
 }
+
+#timeline-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+    border-radius: 10px;
+}
+
 #timeline-thumb {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 18px; height: 18px;
-    background: #4a6cf7;
-    border: 3px solid #e8eaff;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+    border: 3px solid #6366f1;
     border-radius: 50%;
     cursor: grab;
     z-index: 10;
     left: 100%;
     outline: none;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4), 0 0 0 4px rgba(99, 102, 241, 0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-#timeline-thumb:active { cursor: grabbing; }
+
+#timeline-thumb:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.5), 0 0 0 6px rgba(99, 102, 241, 0.2);
+}
+
+#timeline-thumb:active {
+    cursor: grabbing;
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
 .milestone-marker {
     position: absolute;
-    top: -4px;
-    width: 3px;
-    height: 14px;
-    background: #e74c3c;
+    top: -6px;
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(180deg, #f97316 0%, #ef4444 100%);
     transform: translateX(-50%);
-    border-radius: 2px;
+    border-radius: 4px;
     z-index: 5;
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
 }
+
+.milestone-marker::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: #f97316;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(249, 115, 22, 0.6);
+}
+
 .milestone-marker::after {
     content: attr(data-label);
     position: absolute;
-    top: 18px;
+    top: 24px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 10px;
-    color: #e74c3c;
+    color: #f97316;
     white-space: nowrap;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
+
 #timeline-labels {
     display: flex;
     justify-content: space-between;
-    margin-top: 8px;
-    font-size: 11px;
-    color: #6670a0;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #94a3b8;
     padding: 0 4px;
+    font-weight: 500;
 }
+
+#timeline-labels span {
+    transition: color 0.2s ease;
+}
+
+#timeline-labels span:hover {
+    color: #a5b4fc;
+}
+
 .timeline-controls {
     display: flex;
-    gap: 4px;
+    gap: 8px;
     flex-shrink: 0;
+    align-items: center;
 }
+
 .timeline-controls input {
-    width: 70px;
-    background: #151a40;
-    border: 1px solid #3a4080;
-    color: #e0e0e0;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 13px;
+    width: 80px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
     outline: none;
     text-align: center;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
+
+.timeline-controls input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
 .timeline-controls button {
-    background: #4a6cf7;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     border: none;
     color: #fff;
-    padding: 4px 12px;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+    transition: all 0.2s ease;
+}
+
+.timeline-controls button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
 }
 
 /* Assistant (in sidebar) */
@@ -1502,25 +1810,81 @@ canvas {
     pointer-events: none;
 }
 
-/* 多边形标题背景 */
+/* 多边形标题背景 - 矿物图谱风格重新设计 */
 .title-main-badge {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    padding: 15px 80px;
-    clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+    padding: 8px 25px 8px 12px;
+    border-radius: 8px;
+    box-shadow: 
+        0 4px 20px rgba(30, 64, 175, 0.5),
+        0 0 40px rgba(59, 130, 246, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    gap: 12px;
     pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 左侧装饰条 */
+.badge-left-decoration {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%);
+    border-radius: 8px 0 0 8px;
+}
+
+/* 校徽Logo样式 */
+.title-badge-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    filter: brightness(1.2) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+    flex-shrink: 0;
+    margin-left: 6px;
+}
+
+/* 文字组 */
+.title-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .title-text {
-    font-size: 32px;
-    font-weight: 900;
+    font-size: 22px;
+    font-weight: 700;
     color: #ffffff;
-    letter-spacing: 5px;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    letter-spacing: 3px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.title-subtitle {
+    font-size: 10px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* 右侧晶体装饰 */
+.badge-right-decoration {
+    margin-left: 6px;
+    opacity: 0.85;
+}
+
+.crystal-icon {
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .title-sub-text {
@@ -1579,19 +1943,6 @@ canvas {
 /* 确保详情面板本身在 3D 画布上方 */
 #detail-panel {
     z-index: 10000 !important;
-}
-.title-main-badge {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    padding: 15px 100px; /* 增加宽度 */
-    clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-    border: none;
-}
-
-.title-text {
-    font-size: 36px; /* 增大字号 */
-    text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
 /* 隐藏不需要的部分 */
