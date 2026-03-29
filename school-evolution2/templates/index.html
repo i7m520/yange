@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成都理工大学沿革变化系统 - 3D 旗舰版</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- 引入 FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- 核心库 -->
+    <script src="https://cdn.staticfile.net/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdn.staticfile.net/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three-spritetext@1.9.1/dist/three-spritetext.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
+</head>
+<body>
+
+<!-- 顶部晶体风格标题 -->
+<div id="top-title-container">
+    <div class="title-main-badge">
+        <div class="title-text">成理沿革图谱</div>
+    </div>
+</div>
+
+<div id="app-body">
+    <!-- 抽屉式侧边栏 (默认关闭 class: drawer-closed) -->
+    <div id="sidebar" class="drawer-closed">
+
+        <!-- 侧边条形按钮 (拉手) -->
+        <div id="search-drawer-handle">
+            <i class="fas fa-search" style="margin-bottom: 10px;"></i>
+            关键字检索
+        </div>
+
+        <div class="sidebar-content">
+            <!-- 搜索功能模块 -->
+            <div class="sidebar-section" id="search-section">
+                <div class="search-tabs">
+                    <button class="search-tab active" data-tab="year">年份</button>
+                    <button class="search-tab" data-tab="college">学院</button>
+                    <button class="search-tab" data-tab="major">专业</button>
+                </div>
+
+                <!-- 年份搜索面板 -->
+                <div class="search-panel active" id="search-year">
+                    <div class="search-input-wrap">
+                         <input type="number" id="sidebar-year-input" placeholder="1955-2025" />
+                         <button id="sidebar-year-btn">跳转</button>
+                    </div>
+                </div>
+
+                <!-- 学院搜索面板 -->
+                <div class="search-panel" id="search-college">
+                    <div class="search-input-wrap">
+                         <input type="text" id="sidebar-college-input" placeholder="输入学院名称..." />
+                         <button id="sidebar-college-btn">搜索</button>
+                    </div>
+                </div>
+
+                <!-- 专业搜索面板 -->
+                <div class="search-panel" id="search-major">
+                    <div class="search-input-wrap">
+                         <input type="text" id="sidebar-major-input" placeholder="输入专业名称..." />
+                        <button id="sidebar-major-btn">搜索</button>
+                    </div>
+                </div>
+
+                <!-- 搜索结果展示区 -->
+                <div id="sidebar-search-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主展示区 -->
+    <div id="main-wrapper">
+        <div id="main">
+            <!-- 3D 图谱容器 -->
+            <div id="3d-graph"></div>
+
+            <!-- 图例分类 -->
+            <div id="legend">
+                <div class="legend-item"><span class="legend-dot school"></span>学校</div>
+                <div class="legend-item"><span class="legend-dot department"></span>院系</div>
+                <div class="legend-item"><span class="legend-dot major"></span>专业</div>
+            </div>
+
+            <!-- 详情面板 -->
+            <div id="detail-panel" class="hidden">
+                <div class="panel-header">
+                    <h3 id="detail-title">详情</h3>
+                    <button id="detail-close" title="关闭">&times;</button>
+                </div>
+                <div id="detail-content"></div>
+            </div>
+        </div>
+
+        <!-- 底部时间轴 -->
+        <div id="timeline-container">
+            <button id="play-btn" title="播放/暂停">▶</button>
+            <div id="timeline">
+                <div id="timeline-track"><div id="timeline-fill"></div><div id="timeline-thumb"></div></div>
+                <div id="timeline-labels"></div>
+            </div>
+            <div class="timeline-controls">
+                <input type="number" id="year-input" value="2025" />
+                <button id="goto-btn">跳转</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 悬浮小助手挂件 -->
+<div id="floating-assistant" class="collapsed">
+    <div id="assistant-window">
+        <div class="assistant-header">
+            <span><i class="fas fa-robot"></i> 校友小助手</span>
+            <button id="close-assistant">&times;</button>
+        </div>
+        <div id="assistant-messages"></div>
+        <div class="assistant-input-area">
+            <input type="text" id="assistant-input" placeholder="输入关键词..." />
+            <button id="assistant-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <div id="assistant-trigger">
+        <div class="egg-image"></div>
+    </div>
+</div>
+
+<!-- 脚本引用 -->
+<script src="/static/js/graph.js"></script>
+<script src="/static/js/timeline.js"></script>
+<script src="/static/js/sidebar.js"></script>
+<script src="/static/js/assistant.js"></script>
+
+</body>
+</html>

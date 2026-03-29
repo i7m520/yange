@@ -1,0 +1,1868 @@
+/* Reset & Base */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #0a0e27;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+#header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #1a1f4e, #0d1137);
+    border-bottom: 1px solid #2a3070;
+    z-index: 100;
+    flex-shrink: 0;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.year-badge {
+    background: #4a6cf7;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: 700;
+}
+.school-name { font-size: 20px; font-weight: 600; color: #e8eaff; }
+
+/* App Body - Sidebar + Main */
+#app-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Sidebar */
+#sidebar {
+    width: 320px;
+    min-width: 320px;
+    background: linear-gradient(180deg, #131842, #0d1137);
+    border-right: 1px solid #2a3070;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: width 0.3s ease, min-width 0.3s ease;
+    overflow: hidden;
+    flex-shrink: 0;
+    z-index: 50;
+}
+#sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+}
+#sidebar.collapsed .sidebar-content {
+    opacity: 0;
+    pointer-events: none;
+}
+.sidebar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+/* Sidebar Toggle Button */
+#sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    right: -16px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 60px;
+    background: #1a1f4e;
+    border: 1px solid #2a3070;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    color: #8890c0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    z-index: 60;
+    padding: 0;
+}
+#sidebar-toggle:hover { background: #252a6a; color: #e8eaff; }
+#sidebar.collapsed #sidebar-toggle { right: -16px; }
+
+/* Sidebar Section */
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#search-section {
+    flex-shrink: 0;
+}
+#assistant-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid #2a3070;
+}
+.section-header {
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8eaff;
+    background: rgba(74, 108, 247, 0.1);
+    border-bottom: 1px solid #2a3070;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.section-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+.section-toggle:hover { background: rgba(74, 108, 247, 0.2); }
+.toggle-icon {
+    font-size: 10px;
+    transition: transform 0.2s;
+    color: #8890c0;
+}
+.section-toggle.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+/* Section Body */
+.section-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.section-toggle.collapsed + .section-body {
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* Search Tabs */
+.search-tabs {
+    display: flex;
+    padding: 8px 10px 0;
+    gap: 4px;
+}
+.search-tab {
+    flex: 1;
+    padding: 6px 0;
+    background: #151a40;
+    border: 1px solid #3a4080;
+    border-bottom: none;
+    color: #8890c0;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.2s;
+}
+.search-tab.active {
+    background: #1e2460;
+    color: #e8eaff;
+    border-color: #4a6cf7;
+}
+.search-tab:hover:not(.active) { background: #1a1f50; }
+
+/* Search Panels */
+.search-panel {
+    display: none;
+    padding: 10px;
+}
+.search-panel.active { display: block; }
+
+.search-input-wrap {
+    display: flex;
+    gap: 4px;
+    position: relative;
+}
+.search-input-wrap input {
+    flex: 1;
+    background: #151a40;
+    border: 1px solid #3a4080;
+    color: #e0e0e0;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    min-width: 0;
+}
+.search-input-wrap input:focus { border-color: #4a6cf7; }
+.search-input-wrap button {
+    background: #4a6cf7;
+    border: none;
+    color: #fff;
+    padding: 7px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.search-input-wrap button:hover { background: #3a5cd7; }
+
+/* Autocomplete */
+.autocomplete-wrap { position: relative; }
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 40px;
+    background: #1a1f4e;
+    border: 1px solid #3a4080;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.autocomplete-list.hidden { display: none; }
+.autocomplete-item {
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #c0c8ff;
+    border-bottom: 1px solid #252a5a;
+}
+.autocomplete-item:hover { background: #252a6a; }
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item .highlight {
+    color: #4a6cf7;
+    font-weight: 600;
+}
+
+/* Sidebar Search Results */
+#sidebar-search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 10px 10px;
+}
+.search-result-empty {
+    text-align: center;
+    color: #6670a0;
+    font-size: 13px;
+    padding: 20px 0;
+}
+
+/* Result Cards */
+.result-card {
+    background: #1a1f4e;
+    border: 1px solid #2a3070;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+.result-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.result-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e8eaff;
+}
+.result-card-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: #fff;
+}
+.result-card-badge.college { background: #9b59b6; }
+.result-card-badge.major { background: #e67e22; }
+.result-card-badge.active { background: #2ecc71; }
+.result-card-badge.removed { background: #e74c3c; }
+.result-card-badge.migrated { background: #f39c12; }
+
+/* Result card sub-sections */
+.result-card h5 {
+    color: #4a6cf7;
+    font-size: 12px;
+    margin: 10px 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #252a5a;
+}
+.result-card h5:first-of-type { margin-top: 6px; }
+
+/* Name Evolution Timeline in Card */
+.card-evolution {
+    position: relative;
+    padding-left: 12px;
+    margin: 4px 0;
+}
+.card-evo-item {
+    position: relative;
+    padding: 3px 0 3px 10px;
+    font-size: 12px;
+    border-left: 2px solid #3a4080;
+    color: #c0c8ff;
+}
+.card-evo-item.current { border-left-color: #4a6cf7; }
+.card-evo-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3a4080;
+}
+.card-evo-item.current::before { background: #4a6cf7; }
+.card-evo-year {
+    color: #4a6cf7;
+    font-weight: 600;
+    margin-right: 4px;
+    font-size: 11px;
+}
+
+/* Major list in card */
+.card-major-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+.card-major-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #1a1f3e;
+    gap: 4px;
+}
+.card-major-item:last-child { border-bottom: none; }
+.card-major-name {
+    color: #c0c8ff;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.card-major-code {
+    color: #6670a0;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.card-major-years {
+    color: #6670a0;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.card-major-status {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    color: #fff;
+    flex-shrink: 0;
+}
+.card-major-status.active { background: #2ecc71; }
+.card-major-status.removed { background: #e74c3c; }
+.card-major-status.migrated_out { background: #f39c12; }
+
+/* Events list in card */
+.card-events {
+    margin: 4px 0;
+}
+.card-event-item {
+    display: flex;
+    gap: 6px;
+    padding: 3px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #1a1f3e;
+    align-items: flex-start;
+}
+.card-event-item:last-child { border-bottom: none; }
+.card-event-year {
+    color: #4a6cf7;
+    font-weight: 600;
+    font-size: 11px;
+    flex-shrink: 0;
+    min-width: 35px;
+}
+.card-event-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    color: #fff;
+    flex-shrink: 0;
+}
+.card-event-badge.created { background: #2ecc71; }
+.card-event-badge.migration { background: #f39c12; }
+.card-event-badge.code_change { background: #3498db; }
+.card-event-badge.removed { background: #e74c3c; }
+.card-event-detail {
+    color: #c0c8ff;
+    font-size: 12px;
+    flex: 1;
+}
+
+/* View in graph button */
+.view-in-graph-btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    background: rgba(74, 108, 247, 0.2);
+    border: 1px solid #4a6cf7;
+    color: #7b9cf9;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.view-in-graph-btn:hover {
+    background: #4a6cf7;
+    color: #fff;
+}
+
+/* Main Wrapper */
+#main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Main Layout */
+#main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+#graph-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+#graph-svg { width: 100%; height: 100%; }
+
+/* Legend */
+#legend {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(26, 31, 78, 0.9);
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #3a4080;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    display: inline-block;
+}
+.legend-dot.school { background: #4a6cf7; }
+.legend-dot.department { background: #2ecc71; }
+.legend-dot.major { background: #e67e22; }
+
+/* Tooltip */
+#tooltip {
+    position: absolute;
+    padding: 6px 12px;
+    background: rgba(26, 31, 78, 0.95);
+    border: 1px solid #4a6cf7;
+    border-radius: 6px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 150;
+    color: #e8eaff;
+    white-space: nowrap;
+}
+#tooltip.hidden { display: none; }
+
+/* Detail Panel */
+#detail-panel {
+    width: 340px;
+    background: linear-gradient(180deg, #131842, #0d1137);
+    border-left: 1px solid #2a3070;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+#detail-panel.hidden { display: none; }
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #2a3070;
+    background: rgba(74, 108, 247, 0.1);
+}
+.panel-header h3 { font-size: 16px; color: #e8eaff; }
+.panel-header button {
+    background: none; border: none; color: #888;
+    font-size: 22px; cursor: pointer; line-height: 1;
+}
+.panel-header button:hover { color: #fff; }
+#detail-content { padding: 16px; }
+#detail-content h4 {
+    color: #4a6cf7;
+    margin: 14px 0 8px;
+    font-size: 14px;
+    border-bottom: 1px solid #252a5a;
+    padding-bottom: 4px;
+}
+#detail-content h4:first-child { margin-top: 0; }
+#detail-content .info-row {
+    display: flex;
+    padding: 4px 0;
+    font-size: 13px;
+}
+#detail-content .info-label {
+    color: #8890c0;
+    width: 70px;
+    flex-shrink: 0;
+}
+#detail-content .info-value { color: #e0e4ff; }
+#detail-content .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 6px 0;
+}
+#detail-content .tag-item {
+    background: #252a6a;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #c0c8ff;
+    cursor: pointer;
+}
+#detail-content .tag-item:hover { background: #3a4090; }
+.evolution-timeline {
+    position: relative;
+    padding-left: 16px;
+    margin: 8px 0;
+}
+.evolution-item {
+    position: relative;
+    padding: 4px 0 4px 14px;
+    font-size: 13px;
+    border-left: 2px solid #3a4080;
+}
+.evolution-item.current { border-left-color: #4a6cf7; }
+.evolution-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 10px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3a4080;
+}
+.evolution-item.current::before { background: #4a6cf7; }
+.evolution-year { color: #4a6cf7; font-weight: 600; margin-right: 6px; }
+.evolution-name { color: #c0c8ff; }
+
+/* Timeline */
+#timeline-container {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    background: linear-gradient(0deg, #0d1137, #131842);
+    border-top: 1px solid #2a3070;
+    gap: 12px;
+    flex-shrink: 0;
+}
+#play-btn {
+    background: #4a6cf7;
+    border: none;
+    color: #fff;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#play-btn:hover { background: #3a5cd7; }
+#play-btn.playing { background: #e74c3c; }
+#timeline { flex: 1; position: relative; padding: 0 8px; }
+#timeline-track {
+    height: 6px;
+    background: #252a5a;
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+}
+#timeline-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a6cf7, #7b9cf9);
+    border-radius: 3px;
+    width: 100%;
+    transition: width 0.15s;
+}
+#timeline-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px; height: 18px;
+    background: #4a6cf7;
+    border: 3px solid #e8eaff;
+    border-radius: 50%;
+    cursor: grab;
+    z-index: 10;
+    left: 100%;
+    outline: none;
+}
+#timeline-thumb:active { cursor: grabbing; }
+.milestone-marker {
+    position: absolute;
+    top: -4px;
+    width: 3px;
+    height: 14px;
+    background: #e74c3c;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    z-index: 5;
+}
+.milestone-marker::after {
+    content: attr(data-label);
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #e74c3c;
+    white-space: nowrap;
+}
+#timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #6670a0;
+    padding: 0 4px;
+}
+.timeline-controls {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.timeline-controls input {
+    width: 70px;
+    background: #151a40;
+    border: 1px solid #3a4080;
+    color: #e0e0e0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    text-align: center;
+}
+.timeline-controls button {
+    background: #4a6cf7;
+    border: none;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* Assistant (in sidebar) */
+#assistant-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.msg {
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 95%;
+}
+.msg.bot {
+    background: #1e2460;
+    color: #c8ccff;
+    align-self: flex-start;
+}
+.msg.user {
+    background: #4a6cf7;
+    color: #fff;
+    align-self: flex-end;
+}
+.msg .choice-list { margin-top: 6px; }
+.msg .choice-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #252a6a;
+    border: 1px solid #3a4080;
+    color: #c8ccff;
+    padding: 6px 10px;
+    margin: 3px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.msg .choice-btn:hover { background: #3a4090; border-color: #4a6cf7; }
+.assistant-input-area {
+    display: flex;
+    gap: 4px;
+    padding: 8px 10px;
+    border-top: 1px solid #2a3070;
+    flex-shrink: 0;
+}
+.assistant-input-area input {
+    flex: 1;
+    background: #151a40;
+    border: 1px solid #3a4080;
+    color: #e0e0e0;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    min-width: 0;
+}
+.assistant-input-area button {
+    background: #4a6cf7;
+    border: none;
+    color: #fff;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3a4080; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4a6cf7; }
+
+/* Loading */
+.loading {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #4a6cf7;
+    font-size: 16px;
+}
+
+/* ====== Dynamic Animations ====== */
+
+/* --- School node: halo + pulse (BRIGHT) --- */
+.school-halo {
+    animation: school-halo-pulse 3s ease-in-out infinite;
+}
+@keyframes school-halo-pulse {
+    0%, 100% { stroke-opacity: 0.3; stroke-width: 2; }
+    50% { stroke-opacity: 0.8; stroke-width: 4; }
+}
+.school-pulse-inner {
+    animation: school-inner-pulse 2s ease-in-out infinite;
+}
+@keyframes school-inner-pulse {
+    0%, 100% { stroke-opacity: 0.35; stroke-width: 2; }
+    50% { stroke-opacity: 0.9; stroke-width: 3.5; }
+}
+
+/* --- Department badge node: glow breathe (BRIGHT) --- */
+.dept-badge-pulse {
+    animation: dept-badge-breathe 2.5s ease-in-out infinite;
+}
+@keyframes dept-badge-breathe {
+    0%, 100% { stroke-opacity: 0.25; stroke-width: 1.5; }
+    50% { stroke-opacity: 0.75; stroke-width: 3; }
+}
+
+/* --- Regular department node pulse (visible) --- */
+.dept-pulse {
+    animation: dept-glow-pulse 3s ease-in-out infinite;
+}
+@keyframes dept-glow-pulse {
+    0%, 100% { stroke-opacity: 0.15; stroke-width: 1; }
+    50% { stroke-opacity: 0.55; stroke-width: 2; }
+}
+
+/* --- Major node pulse (noticeable) --- */
+.major-pulse {
+    animation: major-glow-pulse 3.5s ease-in-out infinite;
+}
+@keyframes major-glow-pulse {
+    0%, 100% { stroke-opacity: 0.1; stroke-width: 0.8; }
+    50% { stroke-opacity: 0.4; stroke-width: 1.5; }
+}
+
+/* --- Planet node (Saturn style) --- */
+.planet-atmos {
+    animation: planet-atmos-pulse 3s ease-in-out infinite;
+}
+@keyframes planet-atmos-pulse {
+    0%, 100% { stroke-opacity: 0.2; stroke-width: 2; }
+    50% { stroke-opacity: 0.7; stroke-width: 4; }
+}
+.moon-layer { pointer-events: none; }
+.moon-dot { mix-blend-mode: screen; }
+
+/* --- Planet major nodes (celestial body) --- */
+.planet-major-glow {
+    animation: planet-major-pulse 3s ease-in-out infinite;
+}
+@keyframes planet-major-pulse {
+    0%, 100% { stroke-opacity: 0.2; stroke-width: 1; }
+    50% { stroke-opacity: 0.6; stroke-width: 2; }
+}
+
+/* --- Link layers (BRIGHT) --- */
+.link-glow-layer line {
+    pointer-events: none;
+    animation: link-glow-breathe 2.5s ease-in-out infinite;
+}
+@keyframes link-glow-breathe {
+    0%, 100% { stroke-opacity: 0.2; }
+    50% { stroke-opacity: 0.5; }
+}
+
+/* Energy flow dashed lines */
+.link-flow-layer line {
+    pointer-events: none;
+}
+.link-flow-line {
+    animation: energy-flow 1.2s linear infinite;
+}
+@keyframes energy-flow {
+    to { stroke-dashoffset: -24; }
+}
+
+/* Particles */
+.particle-layer {
+    pointer-events: none;
+}
+.flow-particle {
+    mix-blend-mode: screen;
+}
+/* ============================================================
+   全新：悬浮小助手 (蛋/小龙形态) 样式
+   ============================================================ */
+
+/* 1. 悬浮容器整体定位 */
+#floating-assistant {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 9999; /* 确保在最顶层 */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* 窗口对齐在蛋的上方 */
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 2. 蛋的触发器 (拖拽区域) */
+#assistant-trigger {
+    width: 100px;
+    height: 120px;
+    cursor: grab;
+    position: relative;
+    user-select: none;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+#assistant-trigger:active { cursor: grabbing; }
+
+/* 蛋的图片切换逻辑 */
+.egg-image {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: all 0.3s ease;
+    /* 默认：收缩状态下的蛋 */
+    background-image: url('/static/images/egg_closed.png');
+}
+
+/* 展开状态：切换成裂开带小龙的蛋 */
+#floating-assistant:not(.collapsed) .egg-image {
+    background-image: url('/static/images/egg_opened.png');
+    transform: scale(1.1); /* 展开时稍微变大一点点 */
+}
+
+/* 3. 对话窗口样式 (现代科技感) */
+#assistant-window {
+    width: 320px;
+    background: rgba(15, 23, 42, 0.9); /* 玻璃拟态背景 */
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    margin-bottom: 15px; /* 与下方的蛋保持间距 */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    overflow: hidden;
+    transform-origin: bottom right; /* 展开动画从右下角开始 */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 4. 收缩/展开 状态切换动画 */
+#floating-assistant.collapsed #assistant-window {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.4) translateY(100px); /* 缩小时向下收回 */
+    pointer-events: none;
+}
+
+/* 窗口内部 UI 美化 */
+.assistant-header {
+    padding: 14px 18px;
+    background: rgba(56, 189, 248, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.assistant-header span {
+    font-weight: 700;
+    color: #38bdf8;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+#close-assistant {
+    background: none; border: none; color: #94a3b8;
+    font-size: 24px; cursor: pointer; line-height: 1;
+}
+#close-assistant:hover { color: #fff; }
+
+/* 消息区域 */
+#assistant-messages {
+    height: 380px;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 输入框区域 */
+.assistant-input-area {
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.2);
+}
+.assistant-input-area input {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: #fff !important;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.assistant-input-area button {
+    background: #38bdf8;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+/* ============================================================
+   第一部分：侧边栏重构 - 移除多余背景
+   ============================================================ */
+
+/* 1. 让整个侧边栏容器透明，不再占据整列颜色 */
+#sidebar {
+    background: transparent !important; /* 彻底透明 */
+    border-right: none !important;      /* 移除右侧分割线 */
+    box-shadow: none !important;
+    width: 330px;
+    padding: 0 !important;
+}
+
+/* 2. 只给“搜索模块”单独加背景和样式 */
+#search-section {
+    margin: 20px 0 0 20px !important; /* 与顶部和左侧保持间距 */
+    background: rgba(15, 23, 42, 0.9) !important; /* 只有搜索框有背景 */
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px;
+    padding-bottom: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    flex: none !important; /* 不再自动撑开高度 */
+}
+
+/* 移除侧边栏内容的默认填充 */
+.sidebar-content {
+    background: transparent !important;
+}
+
+
+/* ============================================================
+   第二部分：小助手形象重塑 - 只要立体形象，不要白边
+   ============================================================ */
+
+/* 1. 移除触发器（蛋）的所有背景、边框和阴影 */
+#assistant-trigger {
+    background: transparent !important; /* 确保背景透明 */
+    border: none !important;           /* 移除任何边框 */
+    box-shadow: none !important;       /* 移除自带的阴影 */
+    width: 120px;                      /* 根据你图片的大小调整 */
+    height: 120px;
+    padding: 0;
+    margin: 0;
+}
+
+/* 2. 确保图片容器也是干净的 */
+.egg-image {
+    background-color: transparent !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* 如果你的图片本身带白边，这一行可以尝试修剪掉一点点边缘，但最好还是用透明PNG */
+    border-radius: 0;
+}
+
+/* 3. 给对话窗口增加一点间距，不要压在形象上面 */
+#assistant-window {
+    margin-bottom: 5px; /* 对话框离蛋近一点 */
+    border: 1px solid rgba(56, 189, 248, 0.3) !important; /* 细微发光边框 */
+}
+
+/* 4. 调整悬浮容器位置 */
+#floating-assistant {
+    bottom: 30px;
+    right: 30px;
+}
+/* ============================================================
+   全新的：悬浮小助手 (左下角起点 + 错位重叠布局)
+   ============================================================ */
+
+
+
+/* 2. 形象触发器 (蛋/小龙) */
+#assistant-trigger {
+    width: 110px;
+    height: 110px;
+    cursor: grab;
+    position: relative;
+    user-select: none;
+    z-index: 10001; /* 确保小龙在对话框上面 */
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
+    transition: all 0.4s ease;
+}
+
+/* 展开状态下：小龙的位置移动到对话框的左上角并重叠 */
+#floating-assistant:not(.collapsed) #assistant-trigger {
+    transform: translate(-20px, 40px); /* 向左向上偏移，形成重叠效果 */
+}
+
+.egg-image {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('/static/images/egg_closed.png');
+}
+
+/* 展开时切换形象 */
+#floating-assistant:not(.collapsed) .egg-image {
+    background-image: url('/static/images/egg_opened.png');
+}
+
+
+
+/* 状态切换 */
+#floating-assistant.collapsed #assistant-window {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.2) translateY(150px);
+    pointer-events: none;
+}
+
+/* 4. 窗口内部结构 */
+.assistant-header {
+    padding: 12px 16px 12px 60px; /* 左侧留出空间给重叠的小龙 */
+    background: rgba(56, 189, 248, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+#assistant-messages {
+    flex: 1;
+    overflow-y: auto; /* 开启滚动 */
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* 滚动条容器样式 */
+    scrollbar-gutter: stable;
+}
+
+/* 5. 滚动条美化 (你要求的滚动读取功能) */
+#assistant-messages::-webkit-scrollbar {
+    width: 5px; /* 极细滚动条 */
+}
+
+#assistant-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+#assistant-messages::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.5); /* 科技蓝滚动条 */
+    border-radius: 10px;
+}
+
+#assistant-messages::-webkit-scrollbar-thumb:hover {
+    background: #38bdf8;
+}
+
+/* 输入区域 */
+.assistant-input-area {
+    padding: 10px 15px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+}
+
+#assistant-input {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: white;
+}
+
+#assistant-send {
+    width: 40px;
+    height: 34px;
+    background: #38bdf8;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* 1. 悬浮总容器：改为水平排列，底端对齐 */
+#floating-assistant {
+    position: fixed;
+    display: flex;
+    flex-direction: row; /* 默认：形象在左，窗口在右 */
+    align-items: flex-end;
+    gap: 10px;
+    z-index: 9999;
+    transition: transform 0.3s ease;
+    /* 初始位置设定 */
+    bottom: 80px;
+    left: 40px;
+}
+
+/* 动态样式：当容器在屏幕右侧时，切换顺序（窗口在左，形象在右） */
+#floating-assistant.is-right {
+    flex-direction: row-reverse;
+}
+
+/* 2. 形象触发器：去掉复杂的偏移，保持纯净 */
+#assistant-trigger {
+    width: 120px;
+    height: 120px;
+    cursor: grab;
+    flex-shrink: 0; /* 防止被挤压 */
+    user-select: none;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+    z-index: 10;
+}
+
+/* 3. 对话窗口：优化大小和动画 */
+#assistant-window {
+    width: 320px;
+    max-height: 45vh; /* 不超过网页高度 1/2 */
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    transform-origin: bottom center;
+}
+
+/* 收缩状态：缩放到形象中心 */
+#floating-assistant.collapsed #assistant-window {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.1);
+    width: 0; /* 收缩时宽度归零，不占位 */
+    margin: 0;
+}
+
+/* 4. 消息区域与滚动条 (保持之前的精致感) */
+#assistant-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#assistant-messages::-webkit-scrollbar { width: 4px; }
+#assistant-messages::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.5);
+    border-radius: 10px;
+}
+/* 连线：模拟发光光束 */
+.link {
+    stroke: #4fc3f7;
+    stroke-opacity: 0.15; /* 很淡的线条，形成网状感 */
+    stroke-width: 0.8px;
+}
+
+/* 节点：增加霓虹发光 */
+.node circle {
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 1px;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); /* 外发光 */
+}
+
+/* 节点文字：模拟图中那种加粗悬浮感 */
+.node text {
+    fill: #ffffff;
+    font-size: 13px;
+    font-weight: 800; /* 加粗 */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9); /* 深色阴影确保文字在亮色球体旁清晰 */
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    pointer-events: none;
+}
+
+/* 学校中心节点的文字 */
+.node.school text {
+    font-size: 18px;
+    fill: #38bdf8;
+}
+
+/* 专业节点的文字（外圈，数量多，略调细） */
+.node.major text {
+    font-size: 11px;
+    font-weight: 600;
+}
+.node circle {
+    /* 移除固定的 drop-shadow，改用简单的边缘描边，防止旋转时性能抖动 */
+    stroke: rgba(255, 255, 255, 0.4);
+    transition: none; /* 旋转时关闭 transition 保证流畅度 */
+}
+
+
+.node circle {
+    /* 移除固定的 drop-shadow，改用简单的边缘描边，防止旋转时性能抖动 */
+    stroke: rgba(255, 255, 255, 0.4);
+    transition: none; /* 旋转时关闭 transition 保证流畅度 */
+}
+
+/* 连线改为极细模式，增强空间感 */
+.links line {
+    stroke-width: 0.5px !important;
+}
+/* 防止拖拽旋转时意外选中文字 */
+#graph-svg text {
+    user-select: none;
+    -webkit-user-select: none;
+}
+/* 彻底去掉左侧侧边栏的“红框块状感” */
+#sidebar {
+    background: transparent !important;
+    border-right: none !important;
+}
+
+/* 搜索框悬浮感 */
+#search-section {
+    background: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 16px;
+    margin: 20px;
+}
+
+/* 解决蓝框选中的丑陋效果 */
+#graph-svg text {
+    user-select: none;
+    -webkit-user-select: none;
+}
+/* 3D 容器全屏化 */
+#3d-graph {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1; /* 位于 UI 之下 */
+}
+
+/* 操作提示样式 */
+.op-hint {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #38bdf8;
+    opacity: 0.7;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 8px;
+}
+
+/* 详情面板层级提高，防止被 3D 遮挡 */
+#detail-panel {
+    z-index: 1000;
+}
+
+
+/* 图例和操作提示层级提高 */
+#legend {
+    z-index: 100;
+    pointer-events: none;
+}
+/* 美化 3D 引擎内置的浮动标签 */
+.graph-tooltip {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid #38bdf8 !important;
+    color: #fff !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important;
+}
+
+#3d-graph {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#graph-svg { display: none; }
+
+/* 确保所有 UI 面板都在 3D 画布上方 */
+#sidebar, #legend, #detail-panel, #timeline-container, #floating-assistant {
+    z-index: 9999 !important;
+}
+
+/* 详情面板美化 */
+#detail-panel {
+    background: rgba(13, 20, 50, 0.95);
+    backdrop-filter: blur(20px);
+    border-left: 2px solid #38bdf8;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+
+/* 连线颜色补全（防止 WebGL 溢出） */
+canvas {
+    display: block;
+}
+/* 详情面板：强制贴合右侧，不再悬浮在中间 */
+#detail-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100%; /* 撑满高度 */
+    background: rgba(10, 15, 35, 0.9);
+    backdrop-filter: blur(25px);
+    border-left: 2px solid #00ffff; /* 矿物蓝边框 */
+    z-index: 10000;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#detail-panel.hidden {
+    transform: translateX(100%); /* 隐藏时滑出屏幕 */
+    display: flex !important; /* 覆盖 display:none */
+}
+
+.panel-header {
+    padding: 20px;
+    background: rgba(0, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+#detail-content {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.detail-info p {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.detail-info span {
+    color: #00ffff;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* 确保小助手始终在最上层 */
+#floating-assistant {
+    z-index: 11000 !important;
+}
+/* ============================================================
+   1. 侧边栏彻底透明化：移除红框下方的空白背景
+   ============================================================ */
+#sidebar {
+    background: transparent !important; /* 移除整条背景色 */
+    border-right: none !important;      /* 移除右侧线条 */
+    box-shadow: none !important;        /* 移除侧边栏阴影 */
+    pointer-events: none;               /* 让点击能穿透空白区域到图谱 */
+    width: 350px;
+    z-index: 1000;                      /* 确保在图谱上方 */
+}
+
+/* 2. 搜索框悬浮样式：只保留红框部分的背景 */
+#search-section {
+    margin: 20px 0 0 20px !important;   /* 与边缘保持间距 */
+    background: rgba(15, 23, 42, 0.85) !important; /* 深蓝半透明背景 */
+    backdrop-filter: blur(15px);        /* 磨砂玻璃效果 */
+    border: 1px solid rgba(56, 189, 248, 0.3) !important; /* 细微发光边框 */
+    border-radius: 16px;                /* 圆角 */
+    padding: 15px 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* 悬浮感阴影 */
+    pointer-events: auto;               /* 恢复搜索框内部的点击事件 */
+    width: 320px;                       /* 限制宽度 */
+}
+
+/* 隐藏侧边栏原本多余的内容容器样式 */
+.sidebar-content {
+    background: transparent !important;
+}
+
+/* 3. 让 3D 图谱真正全屏显示 */
+#main-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* 位于 UI 之下 */
+}
+
+#3d-graph {
+    width: 100%;
+    height: 100%;
+}
+
+/* 4. 确保小助手始终处于最顶层 */
+#floating-assistant {
+    z-index: 2000 !important;
+}
+
+/* 5. 详情面板微调 (贴合右侧，不再被图谱遮挡) */
+#detail-panel {
+    z-index: 1500 !important;
+    background: rgba(10, 15, 35, 0.9);
+    backdrop-filter: blur(20px);
+}
+/* 顶部悬浮标题容器 */
+#top-title-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+/* 多边形标题背景 */
+.title-main-badge {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    padding: 15px 80px;
+    clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.title-text {
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 5px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.title-sub-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 5px;
+    letter-spacing: 2px;
+}
+
+/* 悬浮年份小标 */
+.year-floating-badge {
+    margin-top: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    color: #38bdf8;
+    padding: 2px 15px;
+    border-radius: 20px;
+    border: 1px solid #38bdf8;
+    font-weight: bold;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+}
+
+/* 隐藏旧 Header 样式 */
+#header { display: none !important; }
+/* 1. 搜索框下移：避开左上角的图例分类 */
+#search-section {
+    margin: 140px 0 0 20px !important; /* 将 margin-top 从 20px 增加到 140px 左右 */
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 16px;
+    padding: 15px 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    pointer-events: auto;
+    width: 320px;
+    z-index: 1000;
+}
+
+/* 2. 详情面板关闭按钮点击优化 */
+#detail-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 5px;
+    transition: color 0.2s;
+    z-index: 10001; /* 确保在最前面 */
+}
+
+#detail-close:hover {
+    color: #ffffff;
+}
+
+/* 确保详情面板本身在 3D 画布上方 */
+#detail-panel {
+    z-index: 10000 !important;
+}
+.title-main-badge {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    padding: 15px 100px; /* 增加宽度 */
+    clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    border: none;
+}
+
+.title-text {
+    font-size: 36px; /* 增大字号 */
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+/* 隐藏不需要的部分 */
+.title-sub-text, .year-floating-badge {
+    display: none !important;
+}
+
+/* 确保搜索面板在非 active 状态下隐藏 */
+.search-panel {
+    display: none;
+}
+.search-panel.active {
+    display: block;
+}
+/* 详情内容排版 */
+#detail-content h4 {
+    margin: 20px 0 10px;
+    color: #00ffff;
+    font-size: 15px;
+    border-left: 3px solid #00ffff;
+    padding-left: 10px;
+}
+
+/* 标签样式 (院系/专业列表) */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tag-item {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #e0e0e0;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.tag-item:hover {
+    background: #38bdf8;
+    color: #000;
+}
+
+/* 时间轴样式 */
+.evolution-timeline {
+    margin-top: 10px;
+    padding-left: 10px;
+    border-left: 1px dashed rgba(255,255,255,0.2);
+}
+.evolution-item {
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 15px;
+}
+.evolution-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 5px;
+    width: 9px;
+    height: 9px;
+    background: #444;
+    border-radius: 50%;
+}
+.evolution-item.current::before {
+    background: #00ffff;
+    box-shadow: 0 0 10px #00ffff;
+}
+.evolution-year {
+    display: block;
+    font-size: 11px;
+    color: #38bdf8;
+    margin-bottom: 2px;
+}
+.evolution-name {
+    font-size: 13px;
+    color: #fff;
+}
+
+.detail-note {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.6;
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* 1. 侧边栏抽屉基础 */
+#sidebar {
+    position: fixed; /* 使用 fixed 保证始终在屏幕最左侧 */
+    top: 150px;      /* 避开左上角的图例分类 */
+    left: 0;
+    width: 350px;
+    height: auto;
+    z-index: 99999;  /* 提高层级，确保在 3D 图谱之上 */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none; /* 穿透背景，防止挡住图谱点击 */
+}
+
+/* 抽屉关闭状态：向左平移，把搜索框藏起来 */
+#sidebar.drawer-closed {
+    transform: translateX(-350px);
+}
+
+/* 2. 垂直条形按钮 (关键：必须可见) */
+#search-drawer-handle {
+    position: absolute;
+    right: -40px;    /* 让按钮伸出侧边栏边缘 */
+    top: 0;
+    width: 40px;
+    height: 160px;   /* 按钮高度 */
+    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto; /* 必须恢复点击 */
+    border-radius: 0 12px 12px 0;
+    font-size: 14px;
+    font-weight: bold;
+    writing-mode: vertical-lr; /* 文字垂直排列 */
+    letter-spacing: 4px;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-left: none;
+}
+
+#search-drawer-handle i {
+    writing-mode: horizontal-tb; /* 图标保持水平 */
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#search-drawer-handle:hover {
+    background: #3b82f6;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+}
+
+/* 3. 搜索内容区域 */
+#search-section {
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(20px);
+    border-radius: 0 16px 16px 0;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-left: none;
+    padding: 20px;
+    pointer-events: auto; /* 内部需要点击交互 */
+    box-shadow: 10px 10px 40px rgba(0,0,0,0.6);
+}
+/* ============================================================
+   精准修复：让左侧“关键字检索”条形按钮显示出来
+   ============================================================ */
+
+/* 1. 强制侧边栏容器允许内容溢出，并提高层级 */
+#sidebar {
+    position: fixed !important;
+    top: 150px !important;
+    left: 0 !important;
+    width: 340px !important;  /* 统一宽度 */
+    z-index: 999999 !important; /* 确保在最顶层 */
+    overflow: visible !important; /* 关键：允许拉手伸出来 */
+    background: transparent !important;
+    border: none !important;
+    pointer-events: none !important; /* 容器本身不挡点击，只让内部组件响应 */
+    display: block !important;
+}
+
+/* 2. 收缩状态逻辑：位移必须等于 width */
+#sidebar.drawer-closed {
+    transform: translateX(-340px) !important;
+}
+
+/* 3. 强制条形按钮（拉手）可见并定位 */
+#search-drawer-handle {
+    position: absolute !important;
+    left: 340px !important;  /* 关键：永远固定在 340px 宽度的右侧边缘 */
+    top: 0 !important;
+    width: 40px !important;
+    height: 160px !important;
+    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%) !important;
+    color: white !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    pointer-events: auto !important; /* 恢复拉手的点击 */
+    border-radius: 0 12px 12px 0 !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    writing-mode: vertical-lr !important; /* 文字竖排 */
+    letter-spacing: 4px !important;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-left: none !important;
+}
+
+/* 4. 搜索框内容区美化 */
+.sidebar-content {
+    width: 340px !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border-radius: 0 16px 16px 0 !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    padding: 20px !important;
+    pointer-events: auto !important; /* 搜索框内部恢复点击 */
+    display: block !important;
+}
+
+/* 隐藏原本那个小的左箭头按钮（如果有） */
+#sidebar-toggle {
+    display: none !important;
+}
+/* ============================================================
+   终极压缩：彻底消除搜索框内外的所有多余空白
+   ============================================================ */
+
+/* 1. 强制侧边栏容器高度收缩到内容大小 */
+#sidebar {
+    height: fit-content !important;
+    min-height: 0 !important;
+}
+
+/* 2. 消除内容区所有多余的内边距和高度 */
+.sidebar-content {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important; /* 彻底清除内边距 */
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* 3. 重新定义搜索框背景：只包裹有内容的部分 */
+#search-section {
+    height: auto !important;
+    min-height: 0 !important;
+    background: rgba(15, 23, 42, 0.9) !important; /* 重新加上背景 */
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    border-left: none;
+    border-radius: 0 16px 16px 0;
+    padding: 15px !important; /* 只在这里保留紧凑的内边距 */
+    margin: 0 !important; /* 消除外边距干扰 */
+    box-shadow: 10px 10px 30px rgba(0,0,0,0.6);
+}
+
+/* 4. 消除选项卡上方的巨大空隙 */
+.search-tabs {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* 5. 确保搜索结果不占位 */
+#sidebar-search-results {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+}
+
+#sidebar-search-results:empty {
+    display: none !important;
+}
+
+/* 6. 重新校准拉手按钮的位置，确保它贴合缩小的框体 */
+#search-drawer-handle {
+    top: 0 !important;
+    height: 150px !important; /* 稍微缩短拉手，显得更精致 */
+    left: 100% !important; /* 强制紧贴搜索框右边缘 */
+    margin-left: -1px; /* 消除 1px 的缝隙 */
+}
