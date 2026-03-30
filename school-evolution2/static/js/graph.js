@@ -96,8 +96,16 @@ const Graph = (() => {
                 const sprite = new SpriteText(node.name);
                 sprite.color = '#ffffff';
                 
-                // 字号：学校最大，院系中等，专业最小
+                // 字号：学校最大，院系中等，专业最小（参考矿物图谱）
                 sprite.textHeight = isSchool ? FONT_SIZES.school : (isDept ? FONT_SIZES.department : FONT_SIZES.major);
+                
+                // 字体加粗（参考矿物图谱风格）
+                sprite.fontWeight = isSchool ? '900' : (isDept ? '800' : '700');
+                sprite.fontFace = 'PingFang SC, Microsoft YaHei, sans-serif';
+                
+                // 文字描边，增强可读性
+                sprite.textWidth = sprite.textHeight * node.name.length * 0.8;
+                
                 // 标签放在节点上方（正Y方向），旋转时不易被遮挡
                 sprite.position.set(0, size + 12, 0);
                 // 透明背景，更简洁美观
