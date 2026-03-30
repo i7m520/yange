@@ -79,19 +79,6 @@ const Graph = (() => {
                 const sphere = new THREE.Mesh(geometry, material);
                 group.add(sphere);
 
-                // B. 添加外发光光环（矿物图谱风格：淡蓝色光晕）
-                const glowSize = isSchool ? 1.4 : (isDept ? 1.35 : 1.3);
-                const glowOpacity = isSchool ? 0.18 : (isDept ? 0.12 : 0.08);
-                const glowGeometry = new THREE.SphereGeometry(size * glowSize, 32, 32);
-                const glowMaterial = new THREE.MeshBasicMaterial({
-                    color: COLORS.glow,
-                    transparent: true,
-                    opacity: glowOpacity,
-                    side: THREE.BackSide
-                });
-                const glowSphere = new THREE.Mesh(glowGeometry, glowMaterial);
-                group.add(glowSphere);
-
                 // C. 创建文字标签（三级字号）- 放在节点上方避免被遮挡
                 const sprite = new SpriteText(node.name);
                 sprite.color = '#ffffff';
