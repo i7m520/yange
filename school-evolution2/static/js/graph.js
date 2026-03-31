@@ -115,9 +115,10 @@ const Graph = (() => {
         light.position.set(1, 1, 1);
         scene.add(light);
 
-        // 3. 开启自动旋转
+        // 3. 开启自动旋转（围绕中心学校节点）
         graphInstance.controls().autoRotate = true;
         graphInstance.controls().autoRotateSpeed = 0.5;
+        graphInstance.controls().target.set(0, 0, 0); // 旋转中心设为原点（学校节点位置）
 
         // 4. 修复面板关闭按钮
         const closeBtn = document.getElementById('detail-close');
@@ -254,6 +255,15 @@ function loadYear(year) {
 
             // 初始视角
             graphInstance.cameraPosition({ z: 1200 });
+
+            // 设置旋转中心为学校节点位置
+            setTimeout(() => {
+                const nodes = graphInstance.graphData().nodes;
+                const schoolNode = nodes.find(n => n.type === 'school');
+                if (schoolNode && !isNaN(schoolNode.x) && !isNaN(schoolNode.y) && !isNaN(schoolNode.z)) {
+                    graphInstance.controls().target.set(schoolNode.x, schoolNode.y, schoolNode.z);
+                }
+            }, 1000);
 
             const badge = document.getElementById('current-year-badge');
             if(badge) badge.textContent = year;
