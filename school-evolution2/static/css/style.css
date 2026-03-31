@@ -2154,6 +2154,7 @@ canvas {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
+    pointer-events: none !important; /* 容器不拦截点击 */
 }
 
 /* 小助手形象：小绿龙 */
@@ -2165,6 +2166,7 @@ canvas {
     user-select: none !important;
     filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)) !important;
     transition: transform 0.3s ease !important;
+    pointer-events: auto !important; /* 恢复点击响应 */
 }
 
 #assistant-trigger:hover {
@@ -2189,6 +2191,7 @@ canvas {
     box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
     transform-origin: bottom left !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    pointer-events: auto !important; /* 恢复点击响应 */
 }
 
 /* 收缩状态 */
@@ -2233,6 +2236,7 @@ canvas {
     white-space: nowrap;
     cursor: pointer;
     transition: all 0.3s ease;
+    pointer-events: auto; /* 气泡可点击 */
     /* 默认隐藏，悬停时显示 */
     opacity: 0;
     visibility: hidden;
