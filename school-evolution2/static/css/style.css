@@ -1763,7 +1763,7 @@ canvas {
     width: 75px;
     height: 75px;
     object-fit: contain;
-    filter: brightness(1.5) drop-shadow(0 2px 12px rgba(0, 0, 0, 0.3));
+    filter: brightness(1.0);
     flex-shrink: 0;
     margin-left: 6px;
 }
