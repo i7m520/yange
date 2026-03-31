@@ -1760,8 +1760,8 @@ canvas {
 
 /* 校徽Logo样式 */
 .title-badge-logo {
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     object-fit: contain;
     filter: brightness(1.0);
     flex-shrink: 0;
