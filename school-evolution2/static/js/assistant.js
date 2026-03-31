@@ -13,6 +13,7 @@ const Assistant = (() => {
         const closeBtn = document.getElementById('close-assistant');
         const sendBtn = document.getElementById('assistant-send');
         const input = document.getElementById('assistant-input');
+        const bubble = document.querySelector('.assistant-bubble');
 
         // 1. 发送按钮安全检查
         if (sendBtn) {
@@ -33,6 +34,16 @@ const Assistant = (() => {
                 floatingContainer.classList.toggle('collapsed');
                 if (!floatingContainer.classList.contains('collapsed') &&
                     document.getElementById('assistant-messages').children.length === 0) {
+                    startConversation();
+                }
+            });
+        }
+
+        // 3.5 点击气泡也能展开
+        if (bubble && floatingContainer) {
+            bubble.addEventListener('click', () => {
+                floatingContainer.classList.remove('collapsed');
+                if (document.getElementById('assistant-messages').children.length === 0) {
                     startConversation();
                 }
             });

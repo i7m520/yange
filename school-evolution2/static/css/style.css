@@ -2213,3 +2213,59 @@ canvas {
 #timeline-container {
     padding-left: 110px !important;
 }
+
+
+/* ============================================================
+   小助手气泡 - 参考扣子助手样式
+   ============================================================ */
+
+.assistant-bubble {
+    position: absolute;
+    bottom: 95px;
+    left: 10px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: bubble-bounce 2s ease-in-out infinite;
+}
+
+.assistant-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid #2563eb;
+}
+
+.assistant-bubble:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+/* 展开时隐藏气泡 */
+#floating-assistant:not(.collapsed) .assistant-bubble {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+}
+
+/* 气泡弹跳动画 */
+@keyframes bubble-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
