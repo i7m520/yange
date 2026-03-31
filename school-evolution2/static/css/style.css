@@ -2139,3 +2139,77 @@ canvas {
     left: 100% !important; /* 强制紧贴搜索框右边缘 */
     margin-left: -1px; /* 消除 1px 的缝隙 */
 }
+
+/* ============================================================
+   小助手样式重构 - 左下角定位，参考扣子助手
+   ============================================================ */
+
+/* 主容器：左下角定位 */
+#floating-assistant {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    right: auto !important;
+    z-index: 11000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+/* 小助手形象：小绿龙 */
+#assistant-trigger {
+    width: 80px !important;
+    height: 80px !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    user-select: none !important;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)) !important;
+    transition: transform 0.3s ease !important;
+}
+
+#assistant-trigger:hover {
+    transform: scale(1.1) !important;
+}
+
+.assistant-avatar {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+}
+
+/* 对话窗口 */
+#assistant-window {
+    width: 320px !important;
+    max-height: 400px !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 16px !important;
+    margin-bottom: 10px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+    transform-origin: bottom left !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 收缩状态 */
+#floating-assistant.collapsed #assistant-window {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: scale(0.8) translateX(-20px) !important;
+    pointer-events: none !important;
+}
+
+/* 展开状态 */
+#floating-assistant:not(.collapsed) #assistant-window {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: scale(1) translateX(0) !important;
+}
+
+/* ============================================================
+   时间轴调整 - 左侧留出小助手空间
+   ============================================================ */
+
+#timeline-container {
+    padding-left: 110px !important;
+}
