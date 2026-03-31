@@ -25,9 +25,9 @@ const Graph = (() => {
     // 【字号方案 - 三级层级】匹配矿物图谱风格
     // ==========================================
     const FONT_SIZES = {
-        school: 16,       // 学校：最大
-        department: 9,    // 院系：中等
-        major: 5          // 专业：最小
+        school: 18,       // 学校：最大
+        department: 11,    // 院系：中等
+        major: 7          // 专业：最小
     };
 
     function init() {
