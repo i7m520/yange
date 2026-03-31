@@ -1731,7 +1731,7 @@ canvas {
 /* 多边形标题背景 - 矿物图谱风格重新设计 */
 .title-main-badge {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
-    padding: 2px 15px 2px 8px;
+    padding: 10px 20px 10px 15px;
     border-radius: 8px;
     box-shadow: 
         0 4px 20px rgba(30, 64, 175, 0.5),
