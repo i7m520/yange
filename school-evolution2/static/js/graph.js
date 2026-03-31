@@ -65,13 +65,13 @@ const Graph = (() => {
                 // A. 创建发光球体（矿物图谱风格：圆形节点 + 外发光）
                 const geometry = new THREE.SphereGeometry(size, 32, 32);
                 
-                // 创建渐变材质（去除高光白点）
+                // 创建渐变材质
                 let material = new THREE.MeshPhongMaterial({
                     color: nodeColor,
                     emissive: nodeColor,
                     emissiveIntensity: isSchool ? 0.6 : (isDept ? 0.4 : 0.25),
-                    shininess: 0,
-                    specular: '#000000',
+                    shininess: 80,
+                    specular: '#ffffff',
                     transparent: true,
                     opacity: 0.9
                 });
