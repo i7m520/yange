@@ -1760,10 +1760,10 @@ canvas {
 
 /* 校徽Logo样式 */
 .title-badge-logo {
-    width: 75px;
-    height: 75px;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
-    filter: brightness(1.0);
+    filter: brightness(3.0);
     flex-shrink: 0;
     margin-left: 6px;
 }
