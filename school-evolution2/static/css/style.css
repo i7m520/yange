@@ -1731,7 +1731,7 @@ canvas {
 /* 多边形标题背景 - 矿物图谱风格重新设计 */
 .title-main-badge {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
-    padding: 10px 20px 10px 15px;
+    padding: 8px 20px 8px 60px;
     border-radius: 8px;
     box-shadow: 
         0 4px 20px rgba(30, 64, 175, 0.5),
@@ -1741,10 +1741,23 @@ canvas {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     pointer-events: auto;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+}
+
+/* 校徽Logo样式 - 绝对定位，不影响标签大小 */
+.title-badge-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    filter: brightness(5.0);
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
 }
 
 /* 左侧装饰条 */
@@ -1756,16 +1769,7 @@ canvas {
     width: 4px;
     background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%);
     border-radius: 8px 0 0 8px;
-}
-
-/* 校徽Logo样式 */
-.title-badge-logo {
-    width: 55px;
-    height: 55px;
-    object-fit: contain;
-    filter: brightness(5.0);
-    flex-shrink: 0;
-    margin-left: 6px;
+    z-index: 5;
 }
 
 /* 文字组 */
