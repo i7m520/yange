@@ -2233,7 +2233,10 @@ canvas {
     white-space: nowrap;
     cursor: pointer;
     transition: all 0.3s ease;
-    animation: bubble-bounce 2s ease-in-out infinite;
+    /* 默认隐藏，悬停时显示 */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
 }
 
 .assistant-bubble::after {
@@ -2251,6 +2254,14 @@ canvas {
 .assistant-bubble:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+/* 收起状态悬停时显示气泡 */
+#floating-assistant.collapsed:hover .assistant-bubble {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    animation: bubble-bounce 2s ease-in-out infinite;
 }
 
 /* 展开时隐藏气泡 */
