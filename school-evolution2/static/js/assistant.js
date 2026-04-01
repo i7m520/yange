@@ -196,9 +196,16 @@ const Assistant = (() => {
             .then(r => r.json())
             .then(detail => {
                 if (detail.type === 'major') {
-                    let html = `<b>${detail.name}</b><br>代码: ${detail.code}<br>学制: ${detail.duration}<br>院系: ${detail.department}<br>`;
+                    let html = `<b>${detail.name}</b><br>`;
+                    html += `代码: ${detail.code || '暂无'}<br>`;
+                    html += `学制: ${detail.duration || '暂无'}<br>`;
+                    html += `院系: ${detail.department || '暂无'}<br>`;
+                    if (detail.direction) html += `方向: ${detail.direction}<br>`;
+                    if (detail.year_range) html += `存续: ${detail.year_range}<br>`;
                     if (detail.note) html += `说明: ${detail.note}<br>`;
                     addMessage(html, 'bot', true);
+                } else {
+                    addMessage(formatDetail(detail), 'bot', true);
                 }
             });
     }
@@ -237,7 +244,10 @@ const Assistant = (() => {
         if (d.school) html += `学校: ${d.school}<br>`;
         if (d.department) html += `院系: ${d.department}<br>`;
         if (d.code) html += `代码: ${d.code}<br>`;
+        if (d.duration) html += `学制: ${d.duration}<br>`;
+        if (d.direction) html += `方向: ${d.direction}<br>`;
         if (d.year_range) html += `存续: ${d.year_range}<br>`;
+        if (d.note) html += `说明: ${d.note}<br>`;
         return html;
     }
 
