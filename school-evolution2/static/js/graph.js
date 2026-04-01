@@ -150,7 +150,7 @@ const Graph = (() => {
                     let html = `<div class="detail-info">`;
 
                     // 1. 基础信息行
-                    html += `<p><span>类型:</span> ${detail.type === 'school' ? '学校' : detail.type === 'department' ? '院系' : '专业学科'}</p>`;
+                    html += `<p><span>类型:</span> ${detail.type === 'school' ? '学校' : detail.type === 'department' ? '院系' : detail.type === 'attribution' ? '学院' : '专业学科'}</p>`;
                     if(detail.year_range) html += `<p><span>存续:</span> ${detail.year_range}</p>`;
                     if(detail.school && detail.type !== 'school') html += `<p><span>隶属:</span> ${detail.school}</p>`;
                     if(detail.code) html += `<p><span>代码:</span> ${detail.code}</p>`;

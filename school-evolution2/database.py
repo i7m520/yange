@@ -318,6 +318,41 @@ def get_node_detail(name, year):
     conn = get_connection()
     cursor = conn.cursor()
     
+    # 首先检查是否是学校节点
+    cursor.execute('''
+        SELECT * FROM school_history
+        WHERE name = ?
+    ''', (name,))
+    school_record = cursor.fetchone()
+    
+    if school_record:
+        # 获取该年份的所有院系（通过 attribution 或 department）
+        cursor.execute('''
+            SELECT DISTINCT attribution FROM major_records
+            WHERE school_name = ? AND year = ?
+            ORDER BY attribution
+        ''', (name, year))
+        departments = [row['attribution'] for row in cursor.fetchall() if row['attribution']]
+        
+        # 获取里程碑
+        cursor.execute('''
+            SELECT year, name FROM school_milestones
+            WHERE year <= ? 
+            ORDER BY year DESC LIMIT 5
+        ''', (year,))
+        milestones = cursor.fetchall()
+        
+        conn.close()
+        return {
+            'type': 'school',
+            'name': name,
+            'year': year,
+            'year_range': f"{school_record['start_year']}-{school_record['end_year']}",
+            'departments': departments,
+            'departments_count': len(departments),
+            'history': [{'year': m['year'], 'name': m['name']} for m in milestones]
+        }
+    
     # 处理带代码的专业名称（如 "计算机科学与技术(080901)"）
     pure_name = name.split('(')[0] if '(' in name else name
     
