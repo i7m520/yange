@@ -449,6 +449,38 @@ def get_node_detail(name, year):
         ''', (attribution_name,))
         years = [row['year'] for row in cursor.fetchall()]
         
+        # 获取院系名称演变历史
+        cursor.execute('''
+            SELECT DISTINCT year, department
+            FROM major_records
+            WHERE attribution = ?
+            ORDER BY year
+        ''', (attribution_name,))
+        dept_history = cursor.fetchall()
+        
+        # 构建名称演变
+        name_evolution = []
+        prev_dept = None
+        start_year = None
+        for h in dept_history:
+            if h['department'] != prev_dept:
+                if prev_dept is not None:
+                    name_evolution.append({
+                        'year': start_year,
+                        'name': prev_dept,
+                        'end_year': h['year'] - 1
+                    })
+                prev_dept = h['department']
+                start_year = h['year']
+        
+        if prev_dept is not None and dept_history:
+            last_year = dept_history[-1]['year']
+            name_evolution.append({
+                'year': start_year,
+                'name': prev_dept,
+                'end_year': last_year
+            })
+        
         conn.close()
         return {
             'type': 'attribution',
@@ -457,7 +489,8 @@ def get_node_detail(name, year):
             'school': attr_record['school_name'],
             'majors': [m['name'] for m in majors],
             'majors_count': len(majors),
-            'year_range': f"{min(years)}-{max(years)}" if years else ''
+            'year_range': f"{min(years)}-{max(years)}" if years else '',
+            'dept_evolution': name_evolution
         }
     
     # 尝试作为院系查找
@@ -485,6 +518,38 @@ def get_node_detail(name, year):
         ''', (name,))
         years = [row['year'] for row in cursor.fetchall()]
         
+        # 获取院系名称演变历史（通过 attribution 查找）
+        cursor.execute('''
+            SELECT DISTINCT year, department
+            FROM major_records
+            WHERE attribution = (SELECT attribution FROM major_records WHERE department = ? LIMIT 1)
+            ORDER BY year
+        ''', (name,))
+        dept_history = cursor.fetchall()
+        
+        # 构建名称演变
+        name_evolution = []
+        prev_dept = None
+        start_year = None
+        for h in dept_history:
+            if h['department'] != prev_dept:
+                if prev_dept is not None:
+                    name_evolution.append({
+                        'year': start_year,
+                        'name': prev_dept,
+                        'end_year': h['year'] - 1
+                    })
+                prev_dept = h['department']
+                start_year = h['year']
+        
+        if prev_dept is not None and dept_history:
+            last_year = dept_history[-1]['year']
+            name_evolution.append({
+                'year': start_year,
+                'name': prev_dept,
+                'end_year': last_year
+            })
+        
         conn.close()
         return {
             'type': 'department',
@@ -494,7 +559,8 @@ def get_node_detail(name, year):
             'attribution': dept_record['attribution'] or '',
             'majors': [m['name'] for m in majors],
             'majors_count': len(majors),
-            'year_range': f"{min(years)}-{max(years)}" if years else ''
+            'year_range': f"{min(years)}-{max(years)}" if years else '',
+            'dept_evolution': name_evolution
         }
     
     conn.close()
