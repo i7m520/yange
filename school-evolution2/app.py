@@ -38,6 +38,30 @@ def api_search():
     return jsonify(db.search(keyword))
 
 
+@app.route('/api/search/college')
+def api_search_college():
+    """搜索学院详情"""
+    keyword = request.args.get('keyword', '')
+    if not keyword:
+        return jsonify({'error': '缺少keyword参数'}), 400
+    result = db.search_college_detail(keyword)
+    if result is None:
+        return jsonify({'error': '未找到相关学院'}), 404
+    return jsonify(result)
+
+
+@app.route('/api/search/major')
+def api_search_major():
+    """搜索专业详情"""
+    keyword = request.args.get('keyword', '')
+    if not keyword:
+        return jsonify({'error': '缺少keyword参数'}), 400
+    result = db.search_major_detail(keyword)
+    if result is None:
+        return jsonify({'error': '未找到相关专业'}), 404
+    return jsonify(result)
+
+
 @app.route('/api/assistant', methods=['POST'])
 def api_assistant():
     data = request.get_json(silent=True) or {}

@@ -318,13 +318,16 @@ def get_node_detail(name, year):
     conn = get_connection()
     cursor = conn.cursor()
     
+    # 处理带代码的专业名称（如 "计算机科学与技术(080901)"）
+    pure_name = name.split('(')[0] if '(' in name else name
+    
     # 尝试作为专业查找
     cursor.execute('''
         SELECT mr.*, m.name as major_name, m.code as major_code
         FROM major_records mr
         JOIN majors m ON mr.major_id = m.id
         WHERE m.name = ? AND mr.year = ?
-    ''', (name, year))
+    ''', (pure_name, year))
     major_record = cursor.fetchone()
     
     if major_record:
@@ -335,7 +338,7 @@ def get_node_detail(name, year):
             JOIN majors m ON mr.major_id = m.id
             WHERE m.name = ?
             ORDER BY mr.year
-        ''', (name,))
+        ''', (pure_name,))
         history = cursor.fetchall()
         
         # 构建详情
@@ -362,7 +365,7 @@ def get_node_detail(name, year):
         conn.close()
         return {
             'type': 'major',
-            'name': name,
+            'name': pure_name,
             'year': year,
             'school': major_record['school_name'],
             'department': major_record['department'],
@@ -375,6 +378,53 @@ def get_node_detail(name, year):
             'code_evolution': code_changes
         }
     
+    # 尝试作为归属学院查找（先精确匹配，再模糊匹配）
+    cursor.execute('''
+        SELECT * FROM major_records
+        WHERE attribution = ? AND year = ?
+        LIMIT 1
+    ''', (name, year))
+    attr_record = cursor.fetchone()
+    
+    # 如果精确匹配没找到，尝试模糊匹配
+    if not attr_record:
+        cursor.execute('''
+            SELECT * FROM major_records
+            WHERE attribution LIKE ? AND year = ?
+            LIMIT 1
+        ''', (f'%{name}%', year))
+        attr_record = cursor.fetchone()
+    
+    if attr_record:
+        attribution_name = attr_record['attribution']
+        # 获取归属学院下的专业
+        cursor.execute('''
+            SELECT DISTINCT m.name, m.code
+            FROM major_records mr
+            JOIN majors m ON mr.major_id = m.id
+            WHERE mr.attribution = ? AND mr.year = ?
+        ''', (attribution_name, year))
+        majors = cursor.fetchall()
+        
+        # 获取归属学院历史年份
+        cursor.execute('''
+            SELECT DISTINCT year FROM major_records
+            WHERE attribution = ?
+            ORDER BY year
+        ''', (attribution_name,))
+        years = [row['year'] for row in cursor.fetchall()]
+        
+        conn.close()
+        return {
+            'type': 'attribution',
+            'name': attribution_name,
+            'year': year,
+            'school': attr_record['school_name'],
+            'majors': [m['name'] for m in majors],
+            'majors_count': len(majors),
+            'year_range': f"{min(years)}-{max(years)}" if years else ''
+        }
+    
     # 尝试作为院系查找
     cursor.execute('''
         SELECT * FROM major_records
@@ -385,7 +435,7 @@ def get_node_detail(name, year):
     if dept_record:
         # 获取院系下的专业
         cursor.execute('''
-            SELECT m.name, m.code
+            SELECT DISTINCT m.name, m.code
             FROM major_records mr
             JOIN majors m ON mr.major_id = m.id
             WHERE mr.department = ? AND mr.year = ?
@@ -422,6 +472,29 @@ def search(keyword):
     cursor = conn.cursor()
     results = []
     seen = set()
+    
+    # 搜索归属学院（attribution）
+    cursor.execute('''
+        SELECT DISTINCT attribution
+        FROM major_records
+        WHERE attribution LIKE ?
+        ORDER BY attribution
+    ''', (f'%{keyword}%',))
+    
+    for row in cursor.fetchall():
+        if row['attribution'] and row['attribution'] not in seen:
+            cursor.execute('''
+                SELECT DISTINCT year FROM major_records
+                WHERE attribution = ?
+                ORDER BY year
+            ''', (row['attribution'],))
+            years = [r['year'] for r in cursor.fetchall()]
+            results.append({
+                'type': 'attribution',
+                'name': row['attribution'],
+                'years': years
+            })
+            seen.add(row['attribution'])
     
     # 搜索院系
     cursor.execute('''
@@ -503,12 +576,13 @@ def get_assistant_data(period=None, department=None):
         }
     
     if period and department:
-        # 返回专业列表
+        # 返回专业列表（去重）
         cursor.execute('''
             SELECT m.name, m.code, mr.duration, mr.department, mr.note
             FROM major_records mr
             JOIN majors m ON mr.major_id = m.id
             WHERE mr.school_name = ? AND mr.attribution = ?
+            GROUP BY m.name
             ORDER BY m.name
         ''', (period, department))
         
@@ -554,6 +628,154 @@ def get_all_majors():
     majors = [row['name'] for row in cursor.fetchall()]
     conn.close()
     return majors
+
+
+def search_college_detail(keyword):
+    """搜索学院详情（归属学院）"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # 搜索归属学院
+    cursor.execute('''
+        SELECT DISTINCT attribution FROM major_records
+        WHERE attribution LIKE ?
+        ORDER BY attribution
+    ''', (f'%{keyword}%',))
+    
+    results = cursor.fetchall()
+    if not results:
+        conn.close()
+        return None
+    
+    # 取第一个匹配的归属学院
+    attribution = results[0]['attribution']
+    
+    # 获取归属学院下的所有专业（去重 - 按专业名分组）
+    cursor.execute('''
+        SELECT m.name, MAX(m.code) as code, MAX(mr.duration) as duration
+        FROM major_records mr
+        JOIN majors m ON mr.major_id = m.id
+        WHERE mr.attribution = ?
+        GROUP BY m.name
+        ORDER BY m.name
+    ''', (attribution,))
+    majors = cursor.fetchall()
+    
+    # 获取年份范围
+    cursor.execute('''
+        SELECT MIN(year) as first_year, MAX(year) as last_year
+        FROM major_records WHERE attribution = ?
+    ''', (attribution,))
+    year_range = cursor.fetchone()
+    
+    # 获取院系名称演变历史
+    cursor.execute('''
+        SELECT DISTINCT year, department
+        FROM major_records
+        WHERE attribution = ?
+        ORDER BY year
+    ''', (attribution,))
+    dept_history = cursor.fetchall()
+    
+    # 构建名称演变
+    name_evolution = []
+    prev_dept = None
+    start_year = None
+    for h in dept_history:
+        if h['department'] != prev_dept:
+            if prev_dept is not None:
+                name_evolution.append({
+                    'name': prev_dept,
+                    'start': start_year,
+                    'end': h['year'] - 1
+                })
+            prev_dept = h['department']
+            start_year = h['year']
+    
+    if prev_dept is not None and dept_history:
+        last_year = dept_history[-1]['year']
+        name_evolution.append({
+            'name': prev_dept,
+            'start': start_year,
+            'end': last_year
+        })
+    
+    conn.close()
+    return {
+        'attribution': attribution,
+        'majors': [{'name': m['name'], 'code': str(m['code']) if m['code'] else '', 'duration': str(m['duration']) if m['duration'] else ''} for m in majors],
+        'first_year': year_range['first_year'],
+        'last_year': year_range['last_year'],
+        'name_evolution': name_evolution
+    }
+
+
+def search_major_detail(keyword):
+    """搜索专业详情"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # 搜索专业
+    cursor.execute('''
+        SELECT id, name, code FROM majors
+        WHERE name LIKE ?
+        ORDER BY name
+    ''', (f'%{keyword}%',))
+    
+    results = cursor.fetchall()
+    if not results:
+        conn.close()
+        return None
+    
+    # 取第一个匹配的专业
+    major = results[0]
+    major_name = major['name']
+    
+    # 获取专业所有年份记录
+    cursor.execute('''
+        SELECT mr.*, m.code as major_code
+        FROM major_records mr
+        JOIN majors m ON mr.major_id = m.id
+        WHERE m.name = ?
+        ORDER BY mr.year
+    ''', (major_name,))
+    records = cursor.fetchall()
+    
+    if not records:
+        conn.close()
+        return None
+    
+    all_years = [r['year'] for r in records]
+    first_year = min(all_years)
+    last_year = max(all_years)
+    
+    # 获取最新记录
+    latest = records[-1]
+    
+    # 构建院系演变历史
+    dept_evolution = []
+    prev_dept = None
+    for r in records:
+        if r['department'] != prev_dept:
+            dept_evolution.append({
+                'year': r['year'],
+                'department': r['department'],
+                'school': r['school_name']
+            })
+            prev_dept = r['department']
+    
+    conn.close()
+    return {
+        'name': major_name,
+        'code': str(latest['major_code']) if latest['major_code'] else '',
+        'first_year': first_year,
+        'last_year': last_year,
+        'duration': str(latest['duration']) if latest['duration'] else '',
+        'school': latest['school_name'],
+        'department': latest['department'],
+        'attribution': latest['attribution'] or '',
+        'dept_evolution': dept_evolution
+    }
 
 
 # ========== 数据管理API ==========
