@@ -154,13 +154,29 @@ const Sidebar = (() => {
             <div class="result-card-header">
                 <span class="result-card-badge college">学院</span>
                 <span class="result-card-title">${escapeHtml(data.attribution)}</span>
-            </div>`;
+            </div>
+            <p style="font-size:12px;color:#c0c8ff;">历程: ${data.first_year}-${data.last_year}</p>`;
 
         if (data.majors && data.majors.length > 0) {
             html += `<h5>开设专业 (${data.majors.length})</h5><div class="card-major-list">`;
-            data.majors.forEach(m => {
+            data.majors.slice(0, 10).forEach(m => {
                 html += `<div class="card-major-item"><span class="card-major-name">${escapeHtml(m.name)}</span></div>`;
             });
+            if (data.majors.length > 10) {
+                html += `<div class="card-major-item" style="color:#8890c0">...等${data.majors.length}个专业</div>`;
+            }
+            html += '</div>';
+        }
+
+        // 显示发展沿革
+        if (data.name_evolution && data.name_evolution.length > 0) {
+            html += `<h5>发展沿革</h5><div class="card-evolution-list">`;
+            data.name_evolution.slice(0, 5).forEach(e => {
+                html += `<div class="evolution-item"><span class="evolution-year">${e.start}-${e.end}</span><span class="evolution-name">${escapeHtml(e.name)}</span></div>`;
+            });
+            if (data.name_evolution.length > 5) {
+                html += `<div style="color:#8890c0;font-size:11px">...共${data.name_evolution.length}次变更</div>`;
+            }
             html += '</div>';
         }
 
@@ -196,9 +212,22 @@ const Sidebar = (() => {
                 <span class="result-card-badge major">专业</span>
                 <span class="result-card-title">${escapeHtml(data.name)}</span>
             </div>
-            <p style="font-size:12px;color:#c0c8ff;">代码: ${data.code} | 历程: ${data.first_year}-${data.last_year}</p>
-            <button class="view-in-graph-btn" onclick="Sidebar.viewInGraph('${escapeHtml(data.name)}')">在图中查看</button>
-        </div>`;
+            <p style="font-size:12px;color:#c0c8ff;">代码: ${data.code || '暂无'} | 历程: ${data.first_year}-${data.last_year}</p>`;
+
+        if (data.department) {
+            html += `<p style="font-size:12px;color:#c0c8ff;">所属院系: ${escapeHtml(data.department)}</p>`;
+        }
+
+        // 显示发展沿革
+        if (data.dept_evolution && data.dept_evolution.length > 0) {
+            html += `<h5>发展沿革</h5><div class="card-evolution-list">`;
+            data.dept_evolution.forEach(e => {
+                html += `<div class="evolution-item"><span class="evolution-year">${e.year}</span><span class="evolution-name">${escapeHtml(e.department)}</span></div>`;
+            });
+            html += '</div>';
+        }
+
+        html += `<button class="view-in-graph-btn" onclick="Sidebar.viewInGraph('${escapeHtml(data.name)}')">在图中查看</button></div>`;
         container.innerHTML = html;
     }
 

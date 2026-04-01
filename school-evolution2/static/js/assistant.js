@@ -225,10 +225,13 @@ const Assistant = (() => {
                     return;
                 }
                 addMessage(`找到 <b>${results.length}</b> 条相关结果：`, 'bot', true);
-                const items = results.slice(0, 10).map(r => ({
-                    label: `[${r.type === 'department' ? '院系' : '专业'}] ${r.name}`,
-                    value: r.name
-                }));
+                const items = results.slice(0, 10).map(r => {
+                    const typeLabel = r.type === 'attribution' ? '学院' : r.type === 'department' ? '院系' : '专业';
+                    return {
+                        label: `[${typeLabel}] ${r.name}`,
+                        value: r.name
+                    };
+                });
                 addChoices(items, (name) => {
                     addMessage(name, 'user', true);
                     const year = typeof Timeline !== 'undefined' ? Timeline.getCurrentYear() : 2025;
@@ -248,6 +251,20 @@ const Assistant = (() => {
         if (d.direction) html += `方向: ${d.direction}<br>`;
         if (d.year_range) html += `存续: ${d.year_range}<br>`;
         if (d.note) html += `说明: ${d.note}<br>`;
+        
+        // 显示发展沿革
+        const evolution = d.dept_evolution || d.history || d.name_evolution;
+        if (evolution && evolution.length > 0) {
+            html += `<br><b>发展沿革:</b><br>`;
+            evolution.slice(0, 5).forEach(e => {
+                const time = e.period || e.year || (e.start ? `${e.start}-${e.end}` : '');
+                const name = e.name || e.department || '';
+                html += `• ${time}: ${name}<br>`;
+            });
+            if (evolution.length > 5) {
+                html += `...共${evolution.length}条记录<br>`;
+            }
+        }
         return html;
     }
 
