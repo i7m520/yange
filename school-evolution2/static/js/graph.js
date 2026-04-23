@@ -25,9 +25,9 @@ const Graph = (() => {
     // 【字号方案 - 三级层级】匹配矿物图谱风格
     // ==========================================
     const FONT_SIZES = {
-        school: 18,       // 学校：最大
-        department: 11,    // 院系：中等
-        major: 7          // 专业：最小
+        school: 26,       // 学校：最大
+        department: 12,    // 院系：中等
+        major: 12          // 专业：最小
     };
 
     function init() {
@@ -60,7 +60,7 @@ const Graph = (() => {
                 const nodeColor = isSchool ? COLORS.school : (isDept ? COLORS.department : COLORS.major);
                 
                 // 节点大小：学校最大，院系中等(学校的1/2)，专业最小(学校的1/4)
-                const size = isSchool ? 35 : (isDept ? 18 : 9);
+                const size = isSchool ? 60 : (isDept ? 30 : 25);
 
                 // A. 创建发光球体（矿物图谱风格：圆形节点 + 外发光）
                 const geometry = new THREE.SphereGeometry(size, 32, 32);
