@@ -2167,8 +2167,8 @@ canvas {
 /* 主容器：左下角定位 */
 #floating-assistant {
     position: fixed !important;
-    bottom: 20px !important;
-    left: 20px !important;
+    bottom: 15px !important;
+    left: 15px !important;
     right: auto !important;
     z-index: 11000 !important;
     display: flex !important;
@@ -2179,12 +2179,12 @@ canvas {
 
 /* 小助手形象：小绿龙 */
 #assistant-trigger {
-    width: 160px !important;
-    height: 160px !important;
+    width: 120px !important;
+    height: 120px !important;
     cursor: pointer !important;
     flex-shrink: 0 !important;
     user-select: none !important;
-    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4)) !important;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.35)) !important;
     transition: transform 0.3s ease !important;
     pointer-events: auto !important; /* 恢复点击响应 */
 }
