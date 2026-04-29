@@ -149,6 +149,15 @@ const Graph = (() => {
                     panel.classList.remove('hidden');
                     title.textContent = detail.name;
 
+                    // 如果是学校或学院节点，更新右下角年份徽章为起始年份
+                    if (detail.type === 'school' || detail.type === 'attribution') {
+                        const badge = document.getElementById('current-year-badge');
+                        if (badge && detail.year_range) {
+                            const startYear = detail.year_range.split('-')[0];
+                            badge.textContent = startYear;
+                        }
+                    }
+
                     let html = `<div class="detail-info">`;
 
                     // 1. 基础信息行
@@ -325,6 +334,15 @@ function loadYear(year) {
                                 // 显示面板
                                 panel.classList.remove('hidden');
                                 title.textContent = detail.name;
+
+                                // 如果是学校或学院节点，更新右下角年份徽章为起始年份
+                                if (detail.type === 'school' || detail.type === 'attribution') {
+                                    const badge = document.getElementById('current-year-badge');
+                                    if (badge && detail.year_range) {
+                                        const startYear = detail.year_range.split('-')[0];
+                                        badge.textContent = startYear;
+                                    }
+                                }
 
                                 // 生成并填充 HTML 内容（这部分逻辑必须和 focusOnNode 保持一致）
                                 let html = `<div class="detail-info">`;
