@@ -36,8 +36,8 @@ const Timeline = (() => {
             track.appendChild(marker);
         });
 
-        // Labels
-        const labelYears = [minYear, 1970, 1985, 2000, 2015, maxYear];
+        // Labels - 从1956年(学校建立)开始，均匀分布
+        const labelYears = [1956, 1970, 1985, 2000, 2015, maxYear];
         labelYears.forEach(y => {
             const span = document.createElement('span');
             span.textContent = y;
