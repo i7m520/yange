@@ -318,12 +318,20 @@ def get_node_detail(name, year):
     conn = get_connection()
     cursor = conn.cursor()
     
-    # 首先检查是否是学校节点
+    # 首先检查是否是学校节点（支持模糊匹配，如"成都理工大学"匹配"成都理工大学（成都校区）"）
     cursor.execute('''
         SELECT * FROM school_history
-        WHERE name = ?
-    ''', (name,))
+        WHERE name = ? OR name LIKE ? OR (name LIKE ? AND name LIKE '%'||?)
+    ''', (name, f"{name}%", f"{name}%", "%）"))
     school_record = cursor.fetchone()
+    
+    # 如果没找到，使用模糊匹配
+    if not school_record:
+        cursor.execute('''
+            SELECT * FROM school_history
+            WHERE name LIKE ?
+        ''', (f"%{name}%",))
+        school_record = cursor.fetchone()
     
     if school_record:
         # 获取该年份的所有院系（通过 attribution 或 department）
