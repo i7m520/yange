@@ -79,8 +79,10 @@ const Graph = (() => {
                 const sphere = new THREE.Mesh(geometry, material);
                 group.add(sphere);
 
-                // C. 创建文字标签（三级字号）- 放在节点上方避免被遮挡
-                const sprite = new SpriteText(node.name);
+                // C. 创建文字标签（三级字号）- 显示名称和年份
+                // 学校节点显示名称和年份（年份在第二行）
+                const displayText = isSchool ? `${node.name}\n${node.year}` : node.name;
+                const sprite = new SpriteText(displayText);
                 sprite.color = '#ffffff';
                 
                 // 字号：学校最大，院系中等，专业最小（参考矿物图谱）
