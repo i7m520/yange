@@ -30,6 +30,8 @@ const Graph = (() => {
         major: 12          // 专业：最小
     };
 
+    let dynamicBg = null; // 动态背景实例
+
     function init() {
         const container = document.getElementById('3d-graph');
         if (!container) return;
@@ -121,6 +123,11 @@ const Graph = (() => {
         graphInstance.controls().autoRotate = true;
         graphInstance.controls().autoRotateSpeed = 0.5;
         graphInstance.controls().target.set(0, 0, 0); // 旋转中心设为原点（学校节点位置）
+
+        // 4. 初始化动态背景
+        if (typeof DynamicBackground !== 'undefined') {
+            dynamicBg = new DynamicBackground(graphInstance, currentYear);
+        }
 
         // 4. 修复面板关闭按钮
         const closeBtn = document.getElementById('detail-close');
@@ -221,6 +228,11 @@ const Graph = (() => {
 function loadYear(year) {
         currentYear = year;
         if (!graphInstance) return;
+
+        // 更新动态背景
+        if (dynamicBg) {
+            dynamicBg.setYear(year);
+        }
 
         // 记录加载开始时间
         const loadStartTime = Date.now();
