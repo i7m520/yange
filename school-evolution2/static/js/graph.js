@@ -81,9 +81,8 @@ const Graph = (() => {
                 const sphere = new THREE.Mesh(geometry, material);
                 group.add(sphere);
 
-                // C. 创建文字标签（三级字号）- 显示名称和年份
-                // 学校节点显示名称和年份（年份在第二行）
-                const displayText = isSchool ? `${node.name}\n${node.year}` : node.name;
+                // 学校节点显示名称和起始年份（年份在第二行）
+                const displayText = isSchool && node.start_year ? `${node.name}\n${node.start_year}` : node.name;
                 const sprite = new SpriteText(displayText);
                 sprite.color = '#ffffff';
                 
@@ -124,9 +123,10 @@ const Graph = (() => {
         graphInstance.controls().autoRotateSpeed = 0.5;
         graphInstance.controls().target.set(0, 0, 0); // 旋转中心设为原点（学校节点位置）
 
-        // 4. 初始化动态背景
+        // 4. 初始化动态背景（将 shader mesh 添加到 ForceGraph3D 场景中）
         if (typeof DynamicBackground !== 'undefined') {
-            dynamicBg = new DynamicBackground(graphInstance, currentYear);
+            DynamicBackground.init(graphInstance);
+            dynamicBg = DynamicBackground;
         }
 
         // 4. 修复面板关闭按钮
@@ -246,6 +246,7 @@ function loadYear(year) {
                     id: n.id,
                     name: n.name,
                     type: n.type,
+                    start_year: n.start_year || null,
                     // 给一个随机初始位，防止所有点初始都在 Z=0 的平面上
                     z: Math.random() * 100 - 50
                 })),

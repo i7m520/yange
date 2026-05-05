@@ -264,10 +264,15 @@ def get_graph_data(year):
     school_names = list(set(row['school_name'] for row in records))
     primary_school = school_names[0] if school_names else ''
     
-    # 添加学校节点
+    # 添加学校节点（附带起始年份）
     for sn in school_names:
         if sn and sn not in node_ids:
-            nodes.append({'id': sn, 'type': 'school', 'name': sn})
+            # 查询学校起始年份
+            cursor.execute('SELECT start_year FROM school_history WHERE name = ? OR name LIKE ?', (sn, f"{sn}%"))
+            start_year_row = cursor.fetchone()
+            start_year = start_year_row['start_year'] if start_year_row else None
+            
+            nodes.append({'id': sn, 'type': 'school', 'name': sn, 'start_year': start_year})
             node_ids.add(sn)
     
     # 添加院系和专业节点

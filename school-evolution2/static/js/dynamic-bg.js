@@ -1,5 +1,7 @@
 /**
  * 动态背景着色器 - 根据学校4个历史时期切换风格
+ * 直接将 shader mesh 添加到 ForceGraph3D 场景中，而非创建独立渲染器
+ * 
  * 1956-1958: 成都地质勘探学院 - 黑白灰调，质朴建设感，颗粒感
  * 1958-1993: 成都地质学院 - 深蓝灰调，沉稳学术感，层叠波浪
  * 1993-2001: 成都理工学院 - 暖棕绿调，生机活力感，流动光晕
@@ -7,15 +9,15 @@
  */
 
 const DynamicBackground = (function() {
-    let renderer, scene, camera, mesh, uniforms;
+    let scene, mesh, uniforms;
     let animationId;
-    let container;
 
+    // 顶点着色器：直接输出到裁剪空间，填满整个屏幕
     const vertexShader = `
         varying vec2 vUv;
         void main() {
             vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            gl_Position = vec4(position.xy, 0.999, 1.0);
         }
     `;
 
@@ -184,11 +186,11 @@ const DynamicBackground = (function() {
     let targetPeriod = 3;
     let transitionProgress = 1.0;
 
-    function init(containerEl) {
-        container = containerEl;
-
-        scene = new THREE.Scene();
-        camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    function init(graphInstance) {
+        scene = graphInstance.scene();
+        
+        // 移除 ForceGraph3D 的纯色背景，让 shader 背景可见
+        scene.background = null;
 
         uniforms = {
             uTime: { value: 0 },
@@ -213,25 +215,11 @@ const DynamicBackground = (function() {
         });
 
         mesh = new THREE.Mesh(geometry, material);
+        mesh.renderOrder = -9999;   // 最先渲染（在所有其他对象之后）
+        mesh.frustumCulled = false; // 永远不被裁剪
         scene.add(mesh);
 
-        renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.domElement.style.position = 'absolute';
-        renderer.domElement.style.top = '0';
-        renderer.domElement.style.left = '0';
-        renderer.domElement.style.zIndex = '0';
-        renderer.domElement.style.pointerEvents = 'none';
-        container.insertBefore(renderer.domElement, container.firstChild);
-
-        window.addEventListener('resize', onResize);
         animate();
-    }
-
-    function onResize() {
-        if (!container || !renderer) return;
-        renderer.setSize(container.clientWidth, container.clientHeight);
     }
 
     function animate() {
@@ -239,7 +227,7 @@ const DynamicBackground = (function() {
         
         uniforms.uTime.value = performance.now() * 0.001;
 
-        // 处理过渡
+        // 处理时期过渡
         if (transitionProgress < 1.0) {
             transitionProgress = Math.min(1.0, transitionProgress + 0.008);
             
@@ -260,8 +248,6 @@ const DynamicBackground = (function() {
                 currentPeriod = targetPeriod;
             }
         }
-
-        renderer.render(scene, camera);
     }
 
     function smoothstep(t) {
@@ -279,13 +265,11 @@ const DynamicBackground = (function() {
 
     function destroy() {
         if (animationId) cancelAnimationFrame(animationId);
-        if (renderer) {
-            renderer.dispose();
-            if (renderer.domElement && renderer.domElement.parentNode) {
-                renderer.domElement.parentNode.removeChild(renderer.domElement);
-            }
+        if (mesh && scene) {
+            scene.remove(mesh);
+            mesh.geometry.dispose();
+            mesh.material.dispose();
         }
-        window.removeEventListener('resize', onResize);
     }
 
     return {
