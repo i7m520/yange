@@ -6,10 +6,10 @@
 const DynamicBackground = (function () {
   // 4个历史时期对应的校门照片
   const GATE_IMAGES = {
-    1956: '/static/images/gate_1956.png',  // 成都地质勘探学院 1956-1958
-    1958: '/static/images/gate_1958.png',  // 成都地质学院 1958-1993
-    1993: '/static/images/gate_1993.png',  // 成都理工学院 1993-2001
-    2001: '/static/images/gate_2001.png',  // 成都理工大学 2001-2025
+    1956: '/static/images/gate_1956.jpg',  // 成都地质勘探学院 1956-1958
+    1958: '/static/images/gate_1958.jpg',  // 成都地质学院 1958-1993
+    1993: '/static/images/gate_1993.jpg',  // 成都理工学院 1993-2001
+    2001: '/static/images/gate_2001.jpg',  // 成都理工大学 2001-2025
   };
 
   // 各时期叠加效果参数
