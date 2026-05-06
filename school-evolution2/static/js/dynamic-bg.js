@@ -111,23 +111,31 @@ const DynamicBackground = (function () {
     // 1. 清空
     ctx.clearRect(0, 0, width, height);
 
-    // 2. 绘制校门照片（cover模式填充）
+    // 2. 绘制校门照片（contain模式，确保校名完整显示）
     if (currentImage) {
       const imgRatio = currentImage.width / currentImage.height;
       const canvasRatio = width / height;
-      let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
 
+      // 先用模糊的大图填满背景（避免黑边）
+      ctx.filter = 'blur(30px) brightness(0.3)';
+      ctx.drawImage(currentImage, -20, -20, width + 40, height + 40);
+      ctx.filter = 'none';
+
+      // 再用contain模式完整绘制照片
+      let dx = 0, dy = 0, dw = width, dh = height;
       if (imgRatio > canvasRatio) {
-        // 图片更宽，裁剪左右
-        sw = currentImage.height * canvasRatio;
-        sx = (currentImage.width - sw) / 2;
+        // 图片更宽，高度铺满，水平居中
+        dh = height;
+        dw = height * imgRatio;
+        dx = (width - dw) / 2;
       } else {
-        // 图片更高，裁剪上下
-        sh = currentImage.width / canvasRatio;
-        sy = (currentImage.height - sh) / 2;
+        // 图片更高，宽度铺满，垂直居中
+        dw = width;
+        dh = width / imgRatio;
+        dy = (height - dh) / 2;
       }
 
-      ctx.drawImage(currentImage, sx, sy, sw, sh, 0, 0, width, height);
+      ctx.drawImage(currentImage, dx, dy, dw, dh);
     } else {
       // 如果图片没加载成功，用纯色替代
       ctx.fillStyle = '#1a1a2e';
