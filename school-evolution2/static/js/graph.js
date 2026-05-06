@@ -125,8 +125,9 @@ const Graph = (() => {
 
         // 4. 初始化动态背景（CanvasTexture 方式，通过 scene.background 覆盖全视口）
         if (typeof DynamicBackground !== 'undefined') {
-            DynamicBackground.init(graphInstance);
-            dynamicBg = DynamicBackground;
+            DynamicBackground.init(graphInstance).then(() => {
+                dynamicBg = DynamicBackground;
+            });
         }
 
         // 5. 修复面板关闭按钮

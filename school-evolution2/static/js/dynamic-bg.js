@@ -1,315 +1,325 @@
 /**
- * 动态背景模块 - 使用 Canvas 2D 绘制 + Three.js scene.background
- * 
- * 原理：在 Canvas 2D 上绘制动态背景效果，生成 CanvasTexture，
- * 通过 scene.background 设置，始终覆盖全视口，不会因旋转产生黑边。
+ * 动态背景模块 - 校门照片 + 动态效果
+ * 使用校门口照片作为背景，叠加动态光效、粒子等效果
+ * 通过 scene.background = CanvasTexture 设置，始终覆盖全视口
  */
-const DynamicBackground = (() => {
-    let canvas2d = null;    // 离屏 2D canvas
-    let ctx = null;         // 2D 绑定上下文
-    let texture = null;     // Three.js CanvasTexture
-    let scene = null;       // ForceGraph3D 的 scene
-    let currentYear = 2025;
-    let animFrame = null;
-    let startTime = Date.now();
-    let particles = [];     // 粒子数组
-    let width = 1920;
-    let height = 1080;
+const DynamicBackground = (function () {
+  // 4个历史时期对应的校门照片
+  const GATE_IMAGES = {
+    1956: '/static/images/gate_1956.png',  // 成都地质勘探学院 1956-1958
+    1958: '/static/images/gate_1958.png',  // 成都地质学院 1958-1993
+    1993: '/static/images/gate_1993.png',  // 成都理工学院 1993-2001
+    2001: '/static/images/gate_2001.png',  // 成都理工大学 2001-2025
+  };
 
-    // ============ 四个历史时期配色 ============
-    const PERIODS = [
-        {
-            // 1956-1958 成都地质勘探学院：黑白颗粒感+暖黄底片色调
-            name: '成都地质勘探学院',
-            bg1: '#1a1610', bg2: '#2d2418', bg3: '#0d0b08',
-            accent: '#c9a84c', accent2: '#8b7335',
-            particleColor: 'rgba(180,160,100,', grain: true, grainAlpha: 0.15
-        },
-        {
-            // 1958-1993 成都地质学院：深蓝灰冷色调+星尘粒子
-            name: '成都地质学院',
-            bg1: '#0a0e1a', bg2: '#141e3a', bg3: '#060810',
-            accent: '#4a6fa5', accent2: '#2d4a7a',
-            particleColor: 'rgba(100,150,220,', grain: false, grainAlpha: 0
-        },
-        {
-            // 1993-2001 成都理工学院：暖橙红光晕+彩色渐变
-            name: '成都理工学院',
-            bg1: '#1a0e08', bg2: '#2d1a0a', bg3: '#100804',
-            accent: '#e86830', accent2: '#c44a1a',
-            particleColor: 'rgba(230,140,60,', grain: false, grainAlpha: 0
-        },
-        {
-            // 2001-2025 成都理工大学：深紫蓝+科技光效
-            name: '成都理工大学',
-            bg1: '#0c0820', bg2: '#1a1040', bg3: '#060412',
-            accent: '#7c3aed', accent2: '#4f46e5',
-            particleColor: 'rgba(140,100,240,', grain: false, grainAlpha: 0
-        }
-    ];
+  // 各时期叠加效果参数
+  const PERIOD_STYLES = {
+    1956: {
+      tint: 'rgba(40, 35, 25, 0.25)',      // 暗黄褐色调（老照片感）
+      glowColor: 'rgba(200, 180, 120, 0.08)',
+      particleColor: 'rgba(220, 200, 150, 0.4)',
+      lineColor: 'rgba(180, 160, 100, 0.06)',
+    },
+    1958: {
+      tint: 'rgba(15, 25, 55, 0.35)',       // 深蓝灰色调
+      glowColor: 'rgba(60, 100, 180, 0.1)',
+      particleColor: 'rgba(100, 150, 220, 0.5)',
+      lineColor: 'rgba(60, 100, 180, 0.06)',
+    },
+    1993: {
+      tint: 'rgba(55, 25, 10, 0.3)',        // 暖橙红色调
+      glowColor: 'rgba(220, 140, 60, 0.1)',
+      particleColor: 'rgba(240, 170, 80, 0.5)',
+      lineColor: 'rgba(220, 140, 60, 0.06)',
+    },
+    2001: {
+      tint: 'rgba(20, 10, 45, 0.35)',       // 深紫蓝色调
+      glowColor: 'rgba(100, 60, 200, 0.12)',
+      particleColor: 'rgba(150, 100, 255, 0.5)',
+      lineColor: 'rgba(100, 60, 200, 0.08)',
+    },
+  };
 
-    function getPeriodIndex(year) {
-        if (year < 1958) return 0;
-        if (year < 1993) return 1;
-        if (year < 2001) return 2;
-        return 3;
+  let canvas, ctx;
+  let texture;
+  let scene;
+  let currentPeriod = 2001;
+  let loadedImages = {};
+  let currentImage = null;
+  let animId = null;
+  let particles = [];
+  let time = 0;
+  let width = 0, height = 0;
+  let active = false;
+  let guardInterval = null;
+
+  // 获取年份对应时期
+  function getPeriod(year) {
+    if (year < 1958) return 1956;
+    if (year < 1993) return 1958;
+    if (year < 2001) return 1993;
+    return 2001;
+  }
+
+  // 加载图片
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  // 预加载所有图片
+  async function preloadImages() {
+    const entries = Object.entries(GATE_IMAGES);
+    for (const [period, src] of entries) {
+      try {
+        loadedImages[period] = await loadImage(src);
+        console.log(`[DynamicBackground] 已加载: ${period} 时期校门照片`);
+      } catch (e) {
+        console.warn(`[DynamicBackground] 加载失败: ${period}`, e);
+      }
+    }
+  }
+
+  // 初始化粒子
+  function initParticles(count) {
+    particles = [];
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: -Math.random() * 0.4 - 0.1,
+        r: Math.random() * 2.5 + 0.5,
+        alpha: Math.random() * 0.6 + 0.2,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  // 绘制一帧
+  function drawFrame() {
+    if (!active) return;
+    time += 0.016;
+
+    const style = PERIOD_STYLES[currentPeriod] || PERIOD_STYLES[2001];
+
+    // 1. 清空
+    ctx.clearRect(0, 0, width, height);
+
+    // 2. 绘制校门照片（cover模式填充）
+    if (currentImage) {
+      const imgRatio = currentImage.width / currentImage.height;
+      const canvasRatio = width / height;
+      let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
+
+      if (imgRatio > canvasRatio) {
+        // 图片更宽，裁剪左右
+        sw = currentImage.height * canvasRatio;
+        sx = (currentImage.width - sw) / 2;
+      } else {
+        // 图片更高，裁剪上下
+        sh = currentImage.width / canvasRatio;
+        sy = (currentImage.height - sh) / 2;
+      }
+
+      ctx.drawImage(currentImage, sx, sy, sw, sh, 0, 0, width, height);
+    } else {
+      // 如果图片没加载成功，用纯色替代
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, width, height);
     }
 
-    function getPeriod(year) {
-        return PERIODS[getPeriodIndex(year)];
+    // 3. 叠加色调
+    ctx.fillStyle = style.tint;
+    ctx.fillRect(0, 0, width, height);
+
+    // 4. 绘制移动的光晕
+    drawGlow(style);
+
+    // 5. 绘制粒子
+    drawParticles(style);
+
+    // 6. 绘制流光线条（仅现代时期）
+    if (currentPeriod >= 1993) {
+      drawFlowLines(style);
     }
 
-    // ============ 粒子系统 ============
-    function initParticles(count) {
-        particles = [];
-        for (let i = 0; i < count; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.8,
-                vy: (Math.random() - 0.5) * 0.6,
-                size: Math.random() * 3 + 1,
-                alpha: Math.random() * 0.6 + 0.2,
-                pulse: Math.random() * Math.PI * 2
-            });
-        }
+    // 7. 轻微暗角效果
+    drawVignette();
+
+    // 更新纹理
+    if (texture) {
+      texture.needsUpdate = true;
     }
 
-    function updateParticles(period) {
-        const t = (Date.now() - startTime) * 0.001;
-        for (let p of particles) {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.pulse += 0.02;
+    animId = requestAnimationFrame(drawFrame);
+  }
 
-            // 边界循环
-            if (p.x < 0) p.x = width;
-            if (p.x > width) p.x = 0;
-            if (p.y < 0) p.y = height;
-            if (p.y > height) p.y = 0;
-        }
+  // 绘制移动光晕
+  function drawGlow(style) {
+    const glow1X = width * 0.3 + Math.sin(time * 0.5) * width * 0.15;
+    const glow1Y = height * 0.4 + Math.cos(time * 0.3) * height * 0.1;
+    const r1 = Math.max(width, height) * 0.35;
+
+    const grad1 = ctx.createRadialGradient(glow1X, glow1Y, 0, glow1X, glow1Y, r1);
+    grad1.addColorStop(0, style.glowColor);
+    grad1.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad1;
+    ctx.fillRect(0, 0, width, height);
+
+    const glow2X = width * 0.7 + Math.cos(time * 0.4) * width * 0.12;
+    const glow2Y = height * 0.6 + Math.sin(time * 0.6) * height * 0.08;
+    const r2 = Math.max(width, height) * 0.28;
+
+    const grad2 = ctx.createRadialGradient(glow2X, glow2Y, 0, glow2X, glow2Y, r2);
+    grad2.addColorStop(0, style.glowColor);
+    grad2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad2;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  // 绘制粒子
+  function drawParticles(style) {
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha = 0.2 + 0.3 * Math.sin(time * 1.5 + p.phase);
+
+      // 边界循环
+      if (p.y < -5) { p.y = height + 5; p.x = Math.random() * width; }
+      if (p.x < -5) p.x = width + 5;
+      if (p.x > width + 5) p.x = -5;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = style.particleColor.replace(/[\d.]+\)$/, `${p.alpha})`);
+      ctx.fill();
     }
+  }
 
-    function drawParticles(period) {
-        for (let p of particles) {
-            const alpha = p.alpha * (0.5 + 0.5 * Math.sin(p.pulse));
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = period.particleColor + alpha.toFixed(2) + ')';
-            ctx.fill();
+  // 绘制流光线条
+  function drawFlowLines(style) {
+    const lineCount = 6;
+    for (let i = 0; i < lineCount; i++) {
+      const baseY = height * (0.15 + i * 0.14);
+      const offset = time * (40 + i * 15);
 
-            // 光晕
-            if (p.size > 2) {
-                const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
-                glow.addColorStop(0, period.particleColor + (alpha * 0.3).toFixed(2) + ')');
-                glow.addColorStop(1, period.particleColor + '0)');
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
-                ctx.fillStyle = glow;
-                ctx.fill();
-            }
-        }
+      ctx.beginPath();
+      ctx.moveTo(0, baseY + Math.sin(offset * 0.01 + i) * 20);
+
+      for (let x = 0; x < width; x += 40) {
+        const y = baseY + Math.sin((x + offset) * 0.008 + i * 0.7) * 18;
+        ctx.lineTo(x, y);
+      }
+
+      ctx.strokeStyle = style.lineColor;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
     }
+  }
 
-    // ============ 颗粒噪点（1956时期）============
-    function drawGrain(alpha) {
-        if (alpha <= 0) return;
-        const imageData = ctx.createImageData(width, height);
-        const data = imageData.data;
-        // 每隔几个像素画噪点（性能优化）
-        for (let i = 0; i < data.length; i += 16) {
-            const v = Math.random() * 255;
-            data[i] = v;
-            data[i + 1] = v;
-            data[i + 2] = v;
-            data[i + 3] = alpha * 255;
-        }
-        ctx.putImageData(imageData, 0, 0);
+  // 绘制暗角
+  function drawVignette() {
+    const cx = width / 2;
+    const cy = height / 2;
+    const r = Math.max(width, height) * 0.7;
+
+    const grad = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.5)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  // 调整canvas大小
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    initParticles(40);
+  }
+
+  // 守护 scene.background
+  function startGuard(targetScene) {
+    if (guardInterval) clearInterval(guardInterval);
+    guardInterval = setInterval(() => {
+      if (targetScene && targetScene.background !== texture) {
+        targetScene.background = texture;
+      }
+    }, 500);
+  }
+
+  return {
+    /**
+     * 初始化动态背景
+     * @param {object} graphInstance - ForceGraph3D 实例
+     */
+    async init(graphInstance) {
+      console.log('[DynamicBackground] 初始化中...');
+
+      // 获取 Three.js 场景
+      scene = graphInstance.scene();
+      console.log('[DynamicBackground] 已获取 scene');
+
+      // 创建离屏 Canvas
+      canvas = document.createElement('canvas');
+      ctx = canvas.getContext('2d');
+      resize();
+      window.addEventListener('resize', resize);
+
+      // 创建 CanvasTexture
+      texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+
+      // 预加载所有校门照片
+      await preloadImages();
+
+      // 设置初始背景
+      currentPeriod = getPeriod(2001);
+      currentImage = loadedImages[currentPeriod] || null;
+      scene.background = texture;
+      console.log('[DynamicBackground] 已设置 scene.background = CanvasTexture');
+
+      // 启动守护
+      startGuard(scene);
+
+      // 启动动画循环
+      active = true;
+      drawFrame();
+
+      console.log('[DynamicBackground] 初始化完成');
+    },
+
+    /**
+     * 设置年份，自动切换校门照片和效果风格
+     * @param {number} year
+     */
+    setYear(year) {
+      const period = getPeriod(year);
+      if (period === currentPeriod) return;
+
+      currentPeriod = period;
+      currentImage = loadedImages[period] || null;
+      console.log(`[DynamicBackground] 切换到 ${period} 时期 (year=${year})`);
+    },
+
+    /**
+     * 销毁
+     */
+    destroy() {
+      active = false;
+      if (animId) cancelAnimationFrame(animId);
+      if (guardInterval) clearInterval(guardInterval);
+      window.removeEventListener('resize', resize);
+      if (texture) texture.dispose();
+      if (scene) scene.background = null;
     }
-
-    // ============ 光晕效果 ============
-    function drawGlows(period, t) {
-        // 主光晕 - 缓慢移动
-        const gx1 = width * 0.3 + Math.sin(t * 0.3) * width * 0.15;
-        const gy1 = height * 0.4 + Math.cos(t * 0.2) * height * 0.1;
-        const gr1 = Math.max(1, width * 0.35);
-        const glow1 = ctx.createRadialGradient(gx1, gy1, 0, gx1, gy1, gr1);
-        glow1.addColorStop(0, period.accent + '40');
-        glow1.addColorStop(0.4, period.accent + '18');
-        glow1.addColorStop(1, period.accent + '00');
-        ctx.fillStyle = glow1;
-        ctx.fillRect(0, 0, width, height);
-
-        // 次光晕
-        const gx2 = width * 0.7 + Math.cos(t * 0.25) * width * 0.12;
-        const gy2 = height * 0.6 + Math.sin(t * 0.35) * height * 0.08;
-        const gr2 = Math.max(1, width * 0.25);
-        const glow2 = ctx.createRadialGradient(gx2, gy2, 0, gx2, gy2, gr2);
-        glow2.addColorStop(0, period.accent2 + '30');
-        glow2.addColorStop(0.5, period.accent2 + '10');
-        glow2.addColorStop(1, period.accent2 + '00');
-        ctx.fillStyle = glow2;
-        ctx.fillRect(0, 0, width, height);
-
-        // 第三光晕（小而亮）
-        const gx3 = width * 0.5 + Math.sin(t * 0.4 + 1) * width * 0.2;
-        const gy3 = height * 0.3 + Math.cos(t * 0.3 + 2) * height * 0.15;
-        const gr3 = Math.max(1, width * 0.15);
-        const glow3 = ctx.createRadialGradient(gx3, gy3, 0, gx3, gy3, gr3);
-        glow3.addColorStop(0, period.accent + '25');
-        glow3.addColorStop(0.6, period.accent + '08');
-        glow3.addColorStop(1, period.accent + '00');
-        ctx.fillStyle = glow3;
-        ctx.fillRect(0, 0, width, height);
-    }
-
-    // ============ 科技网格线（2001时期）============
-    function drawTechGrid(period, t) {
-        if (getPeriodIndex(currentYear) !== 3) return;
-
-        ctx.strokeStyle = period.accent + '0a';
-        ctx.lineWidth = 1;
-
-        // 水平线
-        const spacing = 80;
-        for (let y = 0; y < height; y += spacing) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(width, y);
-            ctx.stroke();
-        }
-        // 垂直线
-        for (let x = 0; x < width; x += spacing) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, height);
-            ctx.stroke();
-        }
-    }
-
-    // ============ 流光线条 ============
-    function drawFlowLines(period, t) {
-        const idx = getPeriodIndex(currentYear);
-        ctx.lineWidth = 1.5;
-
-        for (let i = 0; i < 5; i++) {
-            ctx.beginPath();
-            const baseY = height * (0.2 + i * 0.15);
-            const speed = 0.5 + i * 0.1;
-
-            for (let x = 0; x < width; x += 4) {
-                const y = baseY +
-                    Math.sin(x * 0.005 + t * speed + i) * 40 +
-                    Math.sin(x * 0.01 + t * speed * 0.7) * 20;
-                if (x === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            const alpha = 0.08 + 0.04 * Math.sin(t + i);
-            ctx.strokeStyle = period.accent + Math.round(alpha * 255).toString(16).padStart(2, '0');
-            ctx.stroke();
-        }
-    }
-
-    // ============ 主绘制函数 ============
-    function draw() {
-        const t = (Date.now() - startTime) * 0.001;
-        const period = getPeriod(currentYear);
-
-        // 1. 基础渐变背景
-        const grad = ctx.createRadialGradient(
-            width * 0.5, height * 0.5, 0,
-            width * 0.5, height * 0.5, Math.max(1, width * 0.8)
-        );
-        grad.addColorStop(0, period.bg2);
-        grad.addColorStop(0.6, period.bg1);
-        grad.addColorStop(1, period.bg3);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, width, height);
-
-        // 2. 光晕效果
-        drawGlows(period, t);
-
-        // 3. 科技网格（仅2001后）
-        drawTechGrid(period, t);
-
-        // 4. 流光线条
-        drawFlowLines(period, t);
-
-        // 5. 粒子
-        updateParticles(period);
-        drawParticles(period);
-
-        // 6. 颗粒噪点（仅1956-1958）
-        if (period.grain) {
-            drawGrain(period.grainAlpha);
-        }
-
-        // 7. 更新纹理
-        if (texture) {
-            texture.needsUpdate = true;
-        }
-    }
-
-    // ============ 动画循环 ============
-    function animate() {
-        draw();
-        animFrame = requestAnimationFrame(animate);
-    }
-
-    // ============ 公开 API ============
-    return {
-        /**
-         * 初始化动态背景
-         * @param {object} graphInstance - ForceGraph3D 实例
-         */
-        init: function(graphInstance) {
-            // 获取 ForceGraph3D 的 scene
-            scene = graphInstance.scene();
-
-            // 创建离屏 2D canvas
-            canvas2d = document.createElement('canvas');
-            canvas2d.width = width;
-            canvas2d.height = height;
-            ctx = canvas2d.getContext('2d');
-
-            // 创建 Three.js CanvasTexture
-            texture = new THREE.CanvasTexture(canvas2d);
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.LinearFilter;
-
-            // 设置为场景背景（Three.js 官方方式，始终覆盖全视口）
-            scene.background = texture;
-
-            // 初始化粒子
-            initParticles(120);
-
-            // 启动动画
-            startTime = Date.now();
-            animate();
-
-            console.log('[DynamicBackground] 初始化完成，使用 CanvasTexture + scene.background');
-        },
-
-        /**
-         * 设置当前年份，切换历史时期风格
-         * @param {number} year
-         */
-        setYear: function(year) {
-            currentYear = year;
-        },
-
-        /**
-         * 销毁资源
-         */
-        dispose: function() {
-            if (animFrame) cancelAnimationFrame(animFrame);
-            if (texture) texture.dispose();
-            if (scene) scene.background = null;
-            canvas2d = null;
-            ctx = null;
-            texture = null;
-            scene = null;
-            particles = [];
-        }
-    };
+  };
 })();
