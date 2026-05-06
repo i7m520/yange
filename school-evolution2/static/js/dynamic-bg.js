@@ -1,9 +1,11 @@
 /**
  * 动态背景着色器 - 根据学校4个历史时期切换风格
  * 
- * 核心方案：monkey-patch ForceGraph3D 渲染器的 render 方法
- * 在同一 WebGL 上下文中：先渲染背景场景，清除深度，再渲染图谱场景
- * 无需独立 canvas、无需透明、无需 z-index 分层
+ * 方案：在 ForceGraph3D 场景中添加背景 Shader Mesh
+ * - 创建一个覆盖全屏的 PlaneGeometry + ShaderMaterial
+ * - 放在相机最远处，设置 renderOrder = -9999
+ * - 清除 ForceGraph3D 的 scene.background
+ * - 通过 onRenderFrame 回调更新 shader 时间
  * 
  * 1956-1958: 成都地质勘探学院 - 黑白颗粒，质朴建设感
  * 1958-1993: 成都地质学院 - 深蓝星尘，沉稳学术感
@@ -12,54 +14,54 @@
  */
 
 const DynamicBackground = (function() {
-    let bgScene, bgCamera, mesh, uniforms;
-    let patched = false;
+    let bgMesh, uniforms, scene;
+    let initialized = false;
 
-    // 4个历史时期参数
+    // 4个历史时期参数 - 大幅提亮确保可见
     const periodConfigs = {
         0: { // 1956-1958 成都地质勘探学院 - 黑白颗粒
-            color1: [0.08, 0.07, 0.10],
-            color2: [0.22, 0.20, 0.26],
-            color3: [0.45, 0.42, 0.38],
+            color1: [0.12, 0.11, 0.15],
+            color2: [0.30, 0.28, 0.34],
+            color3: [0.55, 0.52, 0.48],
             noiseScale: 3.0,
             flowSpeed: 0.15,
-            grain: 1.0,
+            grain: 0.8,
             waveAmp: 0.3,
-            glow: 0.3,
-            brightness: 1.2
+            glow: 0.4,
+            brightness: 1.5
         },
         1: { // 1958-1993 成都地质学院 - 深蓝星尘
-            color1: [0.03, 0.06, 0.15],
-            color2: [0.10, 0.18, 0.35],
-            color3: [0.20, 0.35, 0.55],
+            color1: [0.05, 0.08, 0.22],
+            color2: [0.15, 0.25, 0.45],
+            color3: [0.30, 0.45, 0.65],
             noiseScale: 4.0,
             flowSpeed: 0.12,
             grain: 0.3,
             waveAmp: 0.5,
-            glow: 0.6,
-            brightness: 1.3
+            glow: 0.7,
+            brightness: 1.5
         },
         2: { // 1993-2001 成都理工学院 - 暖橙流光
-            color1: [0.10, 0.06, 0.02],
-            color2: [0.25, 0.15, 0.05],
-            color3: [0.50, 0.30, 0.10],
+            color1: [0.15, 0.08, 0.03],
+            color2: [0.35, 0.20, 0.08],
+            color3: [0.60, 0.38, 0.15],
             noiseScale: 3.5,
             flowSpeed: 0.2,
             grain: 0.2,
             waveAmp: 0.6,
-            glow: 0.8,
-            brightness: 1.4
+            glow: 0.9,
+            brightness: 1.6
         },
         3: { // 2001-2025 成都理工大学 - 紫蓝星云
-            color1: [0.06, 0.03, 0.14],
-            color2: [0.15, 0.08, 0.30],
-            color3: [0.25, 0.40, 0.55],
+            color1: [0.08, 0.04, 0.18],
+            color2: [0.20, 0.10, 0.38],
+            color3: [0.35, 0.50, 0.70],
             noiseScale: 5.0,
             flowSpeed: 0.18,
             grain: 0.15,
             waveAmp: 0.4,
-            glow: 1.0,
-            brightness: 1.3
+            glow: 1.2,
+            brightness: 1.5
         }
     };
 
@@ -175,85 +177,99 @@ const DynamicBackground = (function() {
     let transitionProgress = 1.0;
 
     function init(graphInstance) {
-        if (patched) return;
+        if (initialized) return;
 
-        // ForceGraph3D 延迟创建渲染器，需要等待
+        console.log('[DynamicBackground] 开始初始化...');
+
         function tryInit() {
-            const renderer = graphInstance.renderer();
-            const fgScene = graphInstance.scene();
+            try {
+                const renderer = graphInstance.renderer();
+                const fgScene = graphInstance.scene();
 
-            if (!renderer || !fgScene) {
-                console.log('[DynamicBackground] 等待渲染器初始化...');
-                setTimeout(tryInit, 200);
-                return;
+                console.log('[DynamicBackground] renderer:', renderer ? 'OK' : 'NULL');
+                console.log('[DynamicBackground] scene:', fgScene ? 'OK' : 'NULL');
+
+                if (!renderer || !fgScene) {
+                    console.log('[DynamicBackground] 等待渲染器初始化...');
+                    setTimeout(tryInit, 300);
+                    return;
+                }
+
+                scene = fgScene;
+
+                // 1. 创建全屏背景 mesh
+                const cfg = periodConfigs[3];
+                uniforms = {
+                    uTime: { value: 0 },
+                    uColor1: { value: new THREE.Vector3(...cfg.color1) },
+                    uColor2: { value: new THREE.Vector3(...cfg.color2) },
+                    uColor3: { value: new THREE.Vector3(...cfg.color3) },
+                    uNoiseScale: { value: cfg.noiseScale },
+                    uFlowSpeed: { value: cfg.flowSpeed },
+                    uGrain: { value: cfg.grain },
+                    uWaveAmp: { value: cfg.waveAmp },
+                    uGlow: { value: cfg.glow },
+                    uBrightness: { value: cfg.brightness }
+                };
+
+                const geometry = new THREE.PlaneGeometry(1, 1);
+                const material = new THREE.ShaderMaterial({
+                    vertexShader: vertexShader,
+                    fragmentShader: fragmentShader,
+                    uniforms: uniforms,
+                    depthWrite: false,
+                    depthTest: false
+                });
+
+                bgMesh = new THREE.Mesh(geometry, material);
+                bgMesh.frustumCulled = false;
+                bgMesh.renderOrder = -9999;
+
+                // 让 mesh 每帧覆盖全屏（在透视相机下）
+                bgMesh.onBeforeRender = function(renderer, scene, camera) {
+                    if (!camera) return;
+                    // 计算相机远平面尺寸
+                    const dist = camera.far * 0.95;
+                    const vFov = camera.fov * Math.PI / 180;
+                    const height = 2 * Math.tan(vFov / 2) * dist;
+                    const width = height * camera.aspect;
+
+                    bgMesh.scale.set(width, height, 1);
+                    bgMesh.position.copy(camera.position);
+                    bgMesh.quaternion.copy(camera.quaternion);
+                    bgMesh.translateZ(-dist);
+                };
+
+                // 2. 添加到 ForceGraph3D 场景
+                fgScene.add(bgMesh);
+
+                // 3. 移除场景纯色背景（持续守护，防止 ForceGraph3D 重设）
+                setInterval(() => {
+                    if (fgScene.background) fgScene.background = null;
+                }, 100);
+                fgScene.background = null;
+
+                // 4. 每帧更新 shader 时间
+                function updateBg() {
+                    if (!initialized) return;
+                    uniforms.uTime.value = performance.now() * 0.001;
+                    updateTransition();
+                    requestAnimationFrame(updateBg);
+                }
+
+                initialized = true;
+                updateBg();
+
+                console.log('[DynamicBackground] 初始化完成 - 场景内 mesh 方案');
+
+            } catch (e) {
+                console.error('[DynamicBackground] 初始化失败:', e);
+                setTimeout(tryInit, 500);
             }
-
-            console.log('[DynamicBackground] 渲染器已就绪，开始初始化');
-
-            // 1. 创建背景场景（独立的 Three.js 场景 + 正交相机）
-            bgScene = new THREE.Scene();
-            bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-            const cfg = periodConfigs[3];
-            uniforms = {
-                uTime: { value: 0 },
-                uColor1: { value: new THREE.Vector3(...cfg.color1) },
-                uColor2: { value: new THREE.Vector3(...cfg.color2) },
-                uColor3: { value: new THREE.Vector3(...cfg.color3) },
-                uNoiseScale: { value: cfg.noiseScale },
-                uFlowSpeed: { value: cfg.flowSpeed },
-                uGrain: { value: cfg.grain },
-                uWaveAmp: { value: cfg.waveAmp },
-                uGlow: { value: cfg.glow },
-                uBrightness: { value: cfg.brightness }
-            };
-
-            const geometry = new THREE.PlaneGeometry(2, 2);
-            const material = new THREE.ShaderMaterial({
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader,
-                uniforms: uniforms,
-                depthWrite: false,
-                depthTest: false
-            });
-
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.frustumCulled = false;
-            bgScene.add(mesh);
-
-            // 2. 移除 ForceGraph3D 场景的纯色背景
-            fgScene.background = null;
-
-            // 3. Monkey-patch 渲染器：先画背景场景，再画图谱场景
-            renderer.autoClear = false;
-            const origRender = renderer.render.bind(renderer);
-
-            renderer.render = function(scene, camera) {
-                // 更新 shader 时间
-                uniforms.uTime.value = performance.now() * 0.001;
-
-                // 更新过渡动画
-                updateTransition();
-
-                // 确保主场景无纯色背景覆盖
-                if (scene.background) scene.background = null;
-
-                // 先清除所有缓冲
-                this.clear();
-                // 渲染背景场景（填满屏幕的 shader）
-                origRender.call(this, bgScene, bgCamera);
-                // 只清除深度缓冲，保留颜色缓冲（背景颜色保留）
-                this.clearDepth();
-                // 渲染主场景（图谱节点画在背景之上）
-                origRender.call(this, scene, camera);
-            };
-
-            patched = true;
-            console.log('[DynamicBackground] 初始化完成，monkey-patch 已应用');
         }
 
-        // 延迟尝试初始化
-        setTimeout(tryInit, 500);
+        // 延迟启动，确保 ForceGraph3D 已完全初始化
+        setTimeout(tryInit, 800);
     }
 
     function updateTransition() {
@@ -289,12 +305,12 @@ const DynamicBackground = (function() {
     }
 
     function destroy() {
-        if (mesh) {
-            bgScene.remove(mesh);
-            mesh.geometry.dispose();
-            mesh.material.dispose();
+        if (bgMesh && scene) {
+            scene.remove(bgMesh);
+            bgMesh.geometry.dispose();
+            bgMesh.material.dispose();
         }
-        patched = false;
+        initialized = false;
     }
 
     return {

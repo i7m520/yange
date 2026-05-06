@@ -38,7 +38,7 @@ const Graph = (() => {
 
         // 1. 初始化 3D 引擎
         graphInstance = ForceGraph3D()(container)
-            .backgroundColor(COLORS.background)
+            .backgroundColor('#000000')  // 透明背景由 DynamicBackground 处理
             .showNavInfo(false)
             .nodeRelSize(4)
             
@@ -123,7 +123,7 @@ const Graph = (() => {
         graphInstance.controls().autoRotateSpeed = 0.5;
         graphInstance.controls().target.set(0, 0, 0); // 旋转中心设为原点（学校节点位置）
 
-        // 4. 初始化动态背景（monkey-patch 渲染器，在同一 WebGL 上下文中渲染）
+        // 4. 初始化动态背景（在 ForceGraph3D 场景中添加 shader mesh）
         if (typeof DynamicBackground !== 'undefined') {
             DynamicBackground.init(graphInstance);
             dynamicBg = DynamicBackground;
