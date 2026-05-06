@@ -38,7 +38,7 @@ const Graph = (() => {
 
         // 1. 初始化 3D 引擎
         graphInstance = ForceGraph3D()(container)
-            .backgroundColor(COLORS.background)
+            .backgroundColor('rgba(0,0,0,0)')  // 透明背景，让动态背景画布可见
             .showNavInfo(false)
             .nodeRelSize(4)
             
@@ -123,11 +123,53 @@ const Graph = (() => {
         graphInstance.controls().autoRotateSpeed = 0.5;
         graphInstance.controls().target.set(0, 0, 0); // 旋转中心设为原点（学校节点位置）
 
-        // 4. 初始化动态背景（将 shader mesh 添加到 ForceGraph3D 场景中）
+        // 4. 初始化动态背景（独立画布在 ForceGraph3D 后面）
         if (typeof DynamicBackground !== 'undefined') {
-            DynamicBackground.init(graphInstance);
+            DynamicBackground.init(container);
             dynamicBg = DynamicBackground;
         }
+
+        // 5. 强制 ForceGraph3D 透明 - 替换渲染器支持 alpha，持续覆盖背景色
+        function setupTransparent() {
+            const fgRenderer = graphInstance.renderer();
+            if (!fgRenderer) return;
+
+            // 获取当前 canvas 和尺寸
+            const oldCanvas = fgRenderer.domElement;
+            const parent = oldCanvas.parentNode;
+            const width = oldCanvas.clientWidth;
+            const height = oldCanvas.clientHeight;
+
+            // 创建支持 alpha 的新 renderer
+            const newRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            newRenderer.setSize(width, height);
+            newRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            newRenderer.setClearColor(0x000000, 0); // 透明背景
+            newRenderer.domElement.style.position = 'relative';
+            newRenderer.domElement.style.zIndex = '1';
+
+            // 替换 DOM 中的 canvas
+            if (parent) {
+                parent.replaceChild(newRenderer.domElement, oldCanvas);
+            }
+
+            // 通知 ForceGraph3D 使用新 renderer
+            graphInstance.renderer(newRenderer);
+        }
+
+        // 延迟执行，等 ForceGraph3D 完全初始化
+        setTimeout(setupTransparent, 100);
+
+        // 持续确保透明（防止 ForceGraph3D 内部重设）
+        function forceTransparent() {
+            const fgRenderer = graphInstance.renderer();
+            const fgScene = graphInstance.scene();
+            if (fgRenderer) fgRenderer.setClearColor(0x000000, 0);
+            if (fgScene) fgScene.background = null;
+            requestAnimationFrame(forceTransparent);
+        }
+        // 延迟启动透明守护，等 renderer 替换完成
+        setTimeout(forceTransparent, 200);
 
         // 4. 修复面板关闭按钮
         const closeBtn = document.getElementById('detail-close');
