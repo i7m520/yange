@@ -45,7 +45,7 @@ const Graph = (() => {
             // === 浅灰色连线（矿物图谱风格）===
             .linkColor(() => COLORS.link)
             .linkOpacity(0.9)
-            .linkWidth(1.0)
+            .linkWidth(3.0)
 
             // === 能量流粒子（让连线"动起来"）===
             .linkDirectionalParticles(2)
