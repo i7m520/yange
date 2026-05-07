@@ -128,7 +128,7 @@ const DynamicBackground = (function () {
           ctx.fillRect(0, 0, width, height);
         }
 
-        // 再用contain模式完整绘制照片
+        // 再绘制照片：保证宽度铺满，顶部对齐（校名在照片上方，必须完整显示）
         let dx = 0, dy = 0, dw = width, dh = height;
         if (imgRatio > canvasRatio) {
           // 图片更宽，高度铺满，水平居中
@@ -136,10 +136,11 @@ const DynamicBackground = (function () {
           dw = height * imgRatio;
           dx = (width - dw) / 2;
         } else {
-          // 图片更高，宽度铺满，垂直居中
+          // 图片更高（竖版照片），宽度铺满，顶部对齐
           dw = width;
           dh = width / imgRatio;
-          dy = (height - dh) / 2;
+          dx = 0;
+          dy = 0; // 顶部对齐，确保校名完整
         }
 
         ctx.drawImage(currentImage, dx, dy, dw, dh);
