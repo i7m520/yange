@@ -127,6 +127,9 @@ const Graph = (() => {
         if (typeof DynamicBackground !== 'undefined') {
             DynamicBackground.init(graphInstance).then(() => {
                 dynamicBg = DynamicBackground;
+                console.log('[Graph] 动态背景初始化成功');
+            }).catch(err => {
+                console.warn('[Graph] 动态背景初始化失败，使用默认背景:', err);
             });
         }
 

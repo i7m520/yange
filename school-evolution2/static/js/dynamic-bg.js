@@ -104,65 +104,75 @@ const DynamicBackground = (function () {
   // 绘制一帧
   function drawFrame() {
     if (!active) return;
-    time += 0.016;
+    try {
+      time += 0.016;
 
-    const style = PERIOD_STYLES[currentPeriod] || PERIOD_STYLES[2001];
+      const style = PERIOD_STYLES[currentPeriod] || PERIOD_STYLES[2001];
 
-    // 1. 清空
-    ctx.clearRect(0, 0, width, height);
+      // 1. 清空
+      ctx.clearRect(0, 0, width, height);
 
-    // 2. 绘制校门照片（contain模式，确保校名完整显示）
-    if (currentImage) {
-      const imgRatio = currentImage.width / currentImage.height;
-      const canvasRatio = width / height;
+      // 2. 绘制校门照片（contain模式，确保校名完整显示）
+      if (currentImage) {
+        const imgRatio = currentImage.width / currentImage.height;
+        const canvasRatio = width / height;
 
-      // 先用模糊的大图填满背景（避免黑边）
-      ctx.filter = 'blur(30px) brightness(0.3)';
-      ctx.drawImage(currentImage, -20, -20, width + 40, height + 40);
-      ctx.filter = 'none';
+        // 先用模糊的大图填满背景（避免黑边）
+        try {
+          ctx.filter = 'blur(30px) brightness(0.3)';
+          ctx.drawImage(currentImage, -20, -20, width + 40, height + 40);
+          ctx.filter = 'none';
+        } catch(e) {
+          // 某些浏览器不支持 ctx.filter，用纯色替代
+          ctx.fillStyle = '#0a0a1a';
+          ctx.fillRect(0, 0, width, height);
+        }
 
-      // 再用contain模式完整绘制照片
-      let dx = 0, dy = 0, dw = width, dh = height;
-      if (imgRatio > canvasRatio) {
-        // 图片更宽，高度铺满，水平居中
-        dh = height;
-        dw = height * imgRatio;
-        dx = (width - dw) / 2;
+        // 再用contain模式完整绘制照片
+        let dx = 0, dy = 0, dw = width, dh = height;
+        if (imgRatio > canvasRatio) {
+          // 图片更宽，高度铺满，水平居中
+          dh = height;
+          dw = height * imgRatio;
+          dx = (width - dw) / 2;
+        } else {
+          // 图片更高，宽度铺满，垂直居中
+          dw = width;
+          dh = width / imgRatio;
+          dy = (height - dh) / 2;
+        }
+
+        ctx.drawImage(currentImage, dx, dy, dw, dh);
       } else {
-        // 图片更高，宽度铺满，垂直居中
-        dw = width;
-        dh = width / imgRatio;
-        dy = (height - dh) / 2;
+        // 如果图片没加载成功，用纯色替代
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, width, height);
       }
 
-      ctx.drawImage(currentImage, dx, dy, dw, dh);
-    } else {
-      // 如果图片没加载成功，用纯色替代
-      ctx.fillStyle = '#1a1a2e';
+      // 3. 叠加色调
+      ctx.fillStyle = style.tint;
       ctx.fillRect(0, 0, width, height);
-    }
 
-    // 3. 叠加色调
-    ctx.fillStyle = style.tint;
-    ctx.fillRect(0, 0, width, height);
+      // 4. 绘制移动的光晕
+      drawGlow(style);
 
-    // 4. 绘制移动的光晕
-    drawGlow(style);
+      // 5. 绘制粒子
+      drawParticles(style);
 
-    // 5. 绘制粒子
-    drawParticles(style);
+      // 6. 绘制流光线条（仅现代时期）
+      if (currentPeriod >= 1993) {
+        drawFlowLines(style);
+      }
 
-    // 6. 绘制流光线条（仅现代时期）
-    if (currentPeriod >= 1993) {
-      drawFlowLines(style);
-    }
+      // 7. 轻微暗角效果
+      drawVignette();
 
-    // 7. 轻微暗角效果
-    drawVignette();
-
-    // 更新纹理
-    if (texture) {
-      texture.needsUpdate = true;
+      // 更新纹理
+      if (texture) {
+        texture.needsUpdate = true;
+      }
+    } catch(e) {
+      console.warn('[DynamicBackground] drawFrame error:', e);
     }
 
     animId = requestAnimationFrame(drawFrame);
