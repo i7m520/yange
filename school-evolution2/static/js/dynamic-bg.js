@@ -128,19 +128,20 @@ const DynamicBackground = (function () {
           ctx.fillRect(0, 0, width, height);
         }
 
-        // 再绘制照片：保证宽度铺满，顶部对齐（校名在照片上方，必须完整显示）
-        let dx = 0, dy = 0, dw = width, dh = height;
+        // 再绘制照片：高度铺满画布，水平居中（竖版照片校名在上方，必须完整显示）
+        let dx, dy, dw, dh;
         if (imgRatio > canvasRatio) {
-          // 图片更宽，高度铺满，水平居中
+          // 横版照片：高度铺满，水平居中
           dh = height;
           dw = height * imgRatio;
           dx = (width - dw) / 2;
+          dy = 0;
         } else {
-          // 图片更高（竖版照片），宽度铺满，顶部对齐
-          dw = width;
-          dh = width / imgRatio;
-          dx = 0;
-          dy = 0; // 顶部对齐，确保校名完整
+          // 竖版照片：高度铺满，宽度按比例缩放，水平居中
+          dh = height;
+          dw = height * imgRatio;
+          dx = (width - dw) / 2;
+          dy = 0;
         }
 
         ctx.drawImage(currentImage, dx, dy, dw, dh);
