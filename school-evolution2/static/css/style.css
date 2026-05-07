@@ -580,9 +580,9 @@ body {
     width: 12px; height: 12px; border-radius: 50%;
     display: inline-block;
 }
-.legend-dot.school { background: #1E3A8A; }
-.legend-dot.department { background: #3B82F6; }
-.legend-dot.major { background: #93C5FD; }
+.legend-dot.school { background: #8133e8; }
+.legend-dot.department { background: #798edb; }
+.legend-dot.major { background: #84f0cc; }
 
 /* Tooltip */
 #tooltip {
