@@ -119,7 +119,7 @@ const DynamicBackground = (function () {
 
         // 先用模糊的大图填满背景（避免黑边）
         try {
-          ctx.filter = 'blur(30px) brightness(0.3)';
+          ctx.filter = 'blur(30px) brightness(0.15)';
           ctx.drawImage(currentImage, -20, -20, width + 40, height + 40);
           ctx.filter = 'none';
         } catch(e) {
@@ -128,7 +128,7 @@ const DynamicBackground = (function () {
           ctx.fillRect(0, 0, width, height);
         }
 
-        // 再绘制照片：高度铺满画布，水平居中（竖版照片校名在上方，必须完整显示）
+        // 绘制半透明照片：高度铺满画布，水平居中（竖版照片校名在上方，必须完整显示）
         let dx, dy, dw, dh;
         if (imgRatio > canvasRatio) {
           // 横版照片：高度铺满，水平居中
@@ -143,8 +143,9 @@ const DynamicBackground = (function () {
           dx = (width - dw) / 2;
           dy = 0;
         }
-
+        ctx.globalAlpha = 0.4;
         ctx.drawImage(currentImage, dx, dy, dw, dh);
+        ctx.globalAlpha = 1.0;
       } else {
         // 如果图片没加载成功，用纯色替代
         ctx.fillStyle = '#1a1a2e';
