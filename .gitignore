@@ -88,3 +88,4 @@ logs/
 *.pptx
 *.xlsx
 *.csv
+.cozeproj/reduction
