@@ -158,26 +158,7 @@
     </div>
 </div>
 
-<!-- 全局错误捕获 -->
-<script>
-window.onerror = function(msg, url, line, col, error) {
-    console.error('[GlobalError]', msg, url, line, col);
-    var d = document.createElement('div');
-    d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:99999;font-size:14px;';
-    d.textContent = '[Error] ' + msg + ' (line ' + line + ')';
-    document.body.appendChild(d);
-};
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('[UnhandledRejection]', e.reason);
-    var d = document.createElement('div');
-    d.style.cssText = 'position:fixed;top:40px;left:0;right:0;background:orange;color:black;padding:10px;z-index:99999;font-size:14px;';
-    d.textContent = '[Promise Error] ' + e.reason;
-    document.body.appendChild(d);
-});
-</script>
-
 <!-- 脚本引用 -->
-<script src="/static/js/dynamic-bg.js"></script>
 <script src="/static/js/graph.js"></script>
 <script src="/static/js/timeline.js"></script>
 <script src="/static/js/sidebar.js"></script>

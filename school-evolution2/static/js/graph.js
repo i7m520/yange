@@ -30,7 +30,6 @@ const Graph = (() => {
         major: 12          // 专业：最小
     };
 
-    let dynamicBg = null; // 动态背景实例
 
     function init() {
         const container = document.getElementById('3d-graph');
@@ -38,7 +37,7 @@ const Graph = (() => {
 
         // 1. 初始化 3D 引擎
         graphInstance = ForceGraph3D()(container)
-            .backgroundColor('#000000')  // 将被 DynamicBackground 的 CanvasTexture 覆盖
+            .backgroundColor(COLORS.background)
             .showNavInfo(false)
             .nodeRelSize(4)
             
@@ -123,15 +122,6 @@ const Graph = (() => {
         graphInstance.controls().autoRotateSpeed = 0.5;
         graphInstance.controls().target.set(0, 0, 0); // 旋转中心设为原点（学校节点位置）
 
-        // 4. 初始化动态背景（CanvasTexture 方式，通过 scene.background 覆盖全视口）
-        if (typeof DynamicBackground !== 'undefined') {
-            DynamicBackground.init(graphInstance).then(() => {
-                dynamicBg = DynamicBackground;
-                console.log('[Graph] 动态背景初始化成功');
-            }).catch(err => {
-                console.warn('[Graph] 动态背景初始化失败，使用默认背景:', err);
-            });
-        }
 
         // 5. 修复面板关闭按钮
         const closeBtn = document.getElementById('detail-close');
@@ -232,11 +222,6 @@ const Graph = (() => {
 function loadYear(year) {
         currentYear = year;
         if (!graphInstance) return;
-
-        // 更新动态背景
-        if (dynamicBg) {
-            dynamicBg.setYear(year);
-        }
 
         // 记录加载开始时间
         const loadStartTime = Date.now();
